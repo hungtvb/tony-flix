@@ -31,6 +31,8 @@ test.describe('Trang chủ', () => {
   })
 
   test('card hover hiện overlay Xem ngay', async ({ page }) => {
+    // Overlay hover chỉ tồn tại trên desktop (mobile bấm thẳng vào card)
+    test.skip(test.info().project.name === 'mobile', 'Overlay hover không áp dụng cho touch')
     await page.goto('/')
     const card = page.locator('a[href^="/phim/"]').nth(1)
     await card.hover()
@@ -92,9 +94,9 @@ test.describe('Trang chi tiết phim', () => {
     await expect(watchBtn).toBeVisible()
     await expect(watchBtn.locator('svg')).toBeVisible()
 
-    // Poster render
-    const poster = page.locator('img').first()
-    await expect(poster).toBeVisible()
+    // Poster render (alt rỗng = backdrop trang trí, alt có tên = poster chính)
+    const movieName = (await page.locator('h1').first().textContent())?.trim() ?? ''
+    await expect(page.locator(`img[alt="${movieName}"]`)).toBeVisible()
   })
 
   test('danh sách tập dẫn sang trang xem', async ({ page }) => {

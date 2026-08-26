@@ -64,10 +64,10 @@ export default async function WatchPage({
               {activeServer.server_name} · {activeEp.name}
             </p>
           </div>
-          <div className="flex items-center gap-2.5">
+          <div className="flex w-full items-center gap-2 sm:w-auto">
             <Link
               href={`/phim/${slug}`}
-              className="inline-flex h-9 items-center gap-1.5 rounded-md bg-white/10 px-3.5 text-[13px] font-medium text-paper transition-colors hover:bg-white/20"
+              className="inline-flex h-10 flex-1 items-center justify-center gap-1.5 rounded-md bg-white/10 px-3.5 text-[13px] font-medium text-paper transition-colors hover:bg-white/20 sm:h-9 sm:flex-none"
             >
               <Info size={14} strokeWidth={2} aria-hidden />
               Thông tin
@@ -75,7 +75,7 @@ export default async function WatchPage({
             {prev ? (
               <Link
                 href={watchHref(prev.slug, activeServer.server_name)}
-                className="inline-flex h-9 items-center gap-1 rounded-md border border-graphite px-3.5 text-[13px] text-mist transition-colors hover:border-smoke hover:text-paper"
+                className="inline-flex h-10 flex-1 items-center justify-center gap-1 rounded-md border border-graphite px-3.5 text-[13px] text-mist transition-colors hover:border-smoke hover:text-paper sm:h-9 sm:flex-none"
               >
                 <ChevronLeft size={15} strokeWidth={2} aria-hidden />
                 Tập trước
@@ -84,7 +84,7 @@ export default async function WatchPage({
             {next ? (
               <Link
                 href={watchHref(next.slug, activeServer.server_name)}
-                className="inline-flex h-9 items-center gap-1 rounded-md bg-acid-lime px-4 text-[13px] font-semibold text-void transition-opacity hover:opacity-90"
+                className="inline-flex h-10 flex-1 items-center justify-center gap-1 rounded-md bg-acid-lime px-4 text-[13px] font-semibold text-void transition-opacity hover:opacity-90 sm:h-9 sm:flex-none"
               >
                 Tập sau
                 <ChevronRight size={15} strokeWidth={2} aria-hidden />
@@ -156,10 +156,10 @@ async function RelatedRow({ slug, currentName }: { slug: string; currentName: st
   if (related.length === 0) return null
   return (
     <section className="mt-10">
-      <h2 className="mb-3 text-[20px] font-semibold tracking-tight text-paper">Có thể bạn cũng thích</h2>
-      <div className="no-scrollbar -mx-4 flex gap-2.5 overflow-x-auto px-4 pb-2 sm:-mx-8 sm:gap-3 sm:px-8">
+      <h2 className="mb-2.5 text-[17px] font-semibold tracking-tight text-paper sm:mb-3 sm:text-[20px]">Có thể bạn cũng thích</h2>
+      <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:-mx-8 sm:gap-3 sm:px-8">
         {related.map((film) => (
-          <div key={film.slug} className="w-[132px] shrink-0 sm:w-[152px] md:w-[168px]">
+          <div key={film.slug} className="w-[104px] shrink-0 sm:w-[152px] md:w-[168px]">
             <FilmCard film={film} />
           </div>
         ))}

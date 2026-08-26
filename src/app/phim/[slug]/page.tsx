@@ -63,33 +63,33 @@ export default async function FilmPage({ params }: { params: Promise<{ slug: str
   }
 
   return (
-    <div className="">
-      {/* Backdrop header — Netflix detail style */}
-      <section className="relative -mx-4 -mt-16 overflow-hidden sm:-mx-8">
-        <div className="absolute inset-0">
+    <div>
+      {/* Backdrop header — poster trái + nội dung phải trên desktop; xếp dọc gọn trên mobile */}
+      <section className="relative -mx-4 overflow-hidden pt-14 sm:-mx-8 sm:pt-16">
+        {/* Mobile backdrop: mờ nhẹ phía sau, không full-bleed */}
+        <div className="absolute inset-0 sm:hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={movie.thumb_url || movie.poster_url} alt="" className="h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-r from-void via-void/85 to-void/40" />
-          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-void to-transparent" />
+          <img src={movie.thumb_url || movie.poster_url} alt="" className="h-full w-full object-cover opacity-25 blur-sm" />
+          <div className="absolute inset-0 bg-gradient-to-b from-void/60 via-void/85 to-void" />
         </div>
 
-        <div className="relative z-10 flex flex-col gap-6 px-4 pb-10 pt-28 sm:flex-row sm:px-8">
-          <div className="relative aspect-[2/3] w-36 shrink-0 self-start overflow-hidden rounded-lg shadow-xl ring-1 ring-white/15 sm:w-48">
+        <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center gap-4 px-4 pb-8 text-center sm:flex-row sm:items-start sm:gap-6 sm:pb-10 sm:text-left">
+          <div className="relative aspect-[2/3] w-32 shrink-0 self-center overflow-hidden rounded-lg shadow-xl ring-1 ring-white/15 sm:w-48">
             <Image src={movie.poster_url || movie.thumb_url} alt={movie.name} fill sizes="192px" className="object-cover" priority />
           </div>
 
-          <div className="min-w-0 max-w-2xl flex-1">
-            <h1 className="text-3xl font-bold leading-tight tracking-tight text-paper drop-shadow sm:text-4xl">{movie.name}</h1>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-[22px] font-bold leading-tight tracking-tight text-paper drop-shadow sm:text-4xl">{movie.name}</h1>
             {movie.original_name && movie.original_name !== movie.name ? (
-              <p className="mt-1 text-[15px] text-mist/85">{movie.original_name}</p>
+              <p className="mt-1 text-[13px] text-mist/85 sm:text-[15px]">{movie.original_name}</p>
             ) : null}
 
-            <div className="mt-4 flex flex-wrap items-center gap-2">
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-1.5 sm:mt-4 sm:justify-start sm:gap-2">
               {movie.quality ? (
-                <span className="rounded-sm bg-acid-lime px-2 py-0.5 text-[12px] font-bold text-paper">{movie.quality}</span>
+                <span className="rounded-sm bg-acid-lime px-1.5 py-0.5 text-[11px] font-bold text-void sm:px-2 sm:text-[12px]">{movie.quality}</span>
               ) : null}
               {[movie.language, movie.time, movie.current_episode].filter(Boolean).map((chip) => (
-                <span key={chip} className="rounded-sm border border-white/25 px-2 py-0.5 text-[12px] text-bone backdrop-blur-sm">
+                <span key={chip} className="rounded-sm border border-white/25 px-1.5 py-0.5 text-[11px] text-bone backdrop-blur-sm sm:px-2 sm:text-[12px]">
                   {chip}
                 </span>
               ))}
@@ -97,7 +97,7 @@ export default async function FilmPage({ params }: { params: Promise<{ slug: str
             </div>
 
             {categories.filter((c) => !/^\d{4}$/.test(c)).length > 0 ? (
-              <p className="mt-3 flex flex-wrap items-center gap-x-2 text-[13px] text-fog">
+              <p className="mt-2 flex flex-wrap items-center justify-center gap-x-2 text-[12px] text-fog sm:mt-3 sm:justify-start sm:text-[13px]">
                 {categories
                   .filter((c) => !/^\d{4}$/.test(c))
                   .slice(0, 5)
@@ -110,34 +110,34 @@ export default async function FilmPage({ params }: { params: Promise<{ slug: str
               </p>
             ) : null}
 
-            <p className="mt-5 text-[15px] leading-relaxed text-mist [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:5] overflow-hidden">
+            <p className="mt-3 text-[13px] leading-relaxed text-mist [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:4] overflow-hidden sm:mt-5 sm:text-[15px] sm:[-webkit-line-clamp:5]">
               {(movie.description || '').replace(/<[^>]*>/g, '')}
             </p>
 
             {casts.length > 0 ? (
-              <p className="mt-4 text-[13px] leading-relaxed text-fog">
+              <p className="mt-3 hidden text-[12px] leading-relaxed text-fog sm:block sm:text-[13px]">
                 <span className="font-semibold text-mist">Diễn viên: </span>
                 {casts.slice(0, 5).join(', ')}
               </p>
             ) : null}
             {movie.director ? (
-              <p className="mt-1 text-[13px] text-fog">
+              <p className="mt-1 hidden text-[12px] text-fog sm:block sm:text-[13px]">
                 <span className="font-semibold text-mist">Đạo diễn: </span>
                 {movie.director}
               </p>
             ) : null}
 
-            <div className="mt-7">
+            <div className="mt-4 sm:mt-7">
               {movie.episodes[0]?.items?.length ? (
                 <Link
                   href={`/xem/${slug}?ep=${encodeURIComponent(movie.episodes[0].items[0].slug)}`}
-                  className="mt-7 inline-flex h-11 items-center gap-2 rounded-md bg-acid-lime px-7 text-[15px] font-semibold text-void transition-opacity hover:opacity-90"
+                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-acid-lime px-7 text-[14px] font-semibold text-void transition-opacity hover:opacity-90 sm:h-11 sm:w-auto sm:text-[15px]"
                 >
                   <Play size={16} strokeWidth={2.5} fill="currentColor" aria-hidden />
                   Xem ngay
                 </Link>
               ) : (
-                <span className="inline-flex h-11 items-center rounded border border-white/20 px-5 text-[14px] text-ash">
+                <span className="inline-flex h-10 w-full items-center justify-center rounded-md border border-white/20 px-5 text-[13px] text-ash sm:w-auto sm:text-[14px]">
                   Sắp ra mắt
                 </span>
               )}
@@ -148,17 +148,17 @@ export default async function FilmPage({ params }: { params: Promise<{ slug: str
 
       {/* Episodes by server */}
       {movie.episodes.some((s) => s.items.length > 0) ? (
-        <section className="mt-10 space-y-8">
+        <section className="mt-8 space-y-7 sm:mt-10 sm:space-y-8">
           {movie.episodes.map((server: EpisodeServer) =>
             server.items.length > 0 ? (
               <div key={server.server_name}>
-                <h2 className="mb-3 text-[16px] font-semibold tracking-tight text-paper">{server.server_name}</h2>
+                <h2 className="mb-2.5 text-[16px] font-semibold tracking-tight text-paper sm:mb-3 sm:text-[18px]">{server.server_name}</h2>
                 <div className="flex flex-wrap gap-2">
                   {server.items.map((ep) => (
                     <Link
                       key={`${server.server_name}-${ep.slug}`}
                       href={`/xem/${slug}?sv=${encodeURIComponent(server.server_name)}&ep=${encodeURIComponent(ep.slug)}`}
-                      className="inline-flex h-9 min-w-14 items-center justify-center rounded bg-white/5 px-3 text-[13px] text-mist transition-colors hover:bg-white/20 hover:text-paper"
+                      className="inline-flex h-9 min-w-12 items-center justify-center rounded-md bg-white/5 px-2.5 text-[13px] text-mist transition-colors hover:bg-white/20 hover:text-paper"
                     >
                       {ep.name}
                     </Link>
@@ -172,8 +172,8 @@ export default async function FilmPage({ params }: { params: Promise<{ slug: str
 
       {/* Related */}
       {related.length > 0 ? (
-        <section className="mt-12">
-          <h2 className="mb-3 text-[20px] font-semibold tracking-tight text-paper">Có thể bạn cũng thích</h2>
+        <section className="mt-10 sm:mt-12">
+          <h2 className="mb-2.5 text-[17px] font-semibold tracking-tight text-paper sm:mb-3 sm:text-[20px]">Có thể bạn cũng thích</h2>
           <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 sm:gap-3">
             {related.map((film) => (
               <FilmCard key={film.slug} film={film} />
