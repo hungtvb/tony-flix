@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createSessionToken, sessionCookieOptions, SESSION_COOKIE } from '@/lib/session'
 import { findDbAccount } from '@/lib/db'
+import { checkRate, hitRate, resetRate, LOGIN_RATE_MAX } from '@/lib/rate-limit'
 
 /**
  * POST /api/dang-nhap  { username, password }
@@ -8,32 +9,6 @@ import { findDbAccount } from '@/lib/db'
  * Accounts live in Postgres (auto-created + seeded on first use); without
  * DATABASE_URL we fall back to AUTH_USERS env pairs.
  */
-
-// Naive per-instance rate limit against password brute-force.
-const attempts = new Map<string, { count: number; firstAt: number }>()
-const WINDOW_MS = 15 * 60 * 1000
-const MAX_ATTEMPTS = 10
-
-function tooManyAttempts(key: string): boolean {
-  const now = Date.now()
-  const entry = attempts.get(key)
-  if (!entry || now - entry.firstAt > WINDOW_MS) return false
-  return entry.count >= MAX_ATTEMPTS
-}
-
-function recordAttempt(key: string): void {
-  const now = Date.now()
-  const entry = attempts.get(key)
-  if (!entry || now - entry.firstAt > WINDOW_MS) {
-    attempts.set(key, { count: 1, firstAt: now })
-  } else {
-    entry.count += 1
-  }
-}
-
-function resetAttempts(key: string): void {
-  attempts.delete(key)
-}
 
 /** Verify against DB first (when configured), then env fallback. */
 async function verifyCredentials(username: string, password: string): Promise<string | null> {
@@ -72,7 +47,7 @@ export async function POST(request: NextRequest) {
   }
 
   const key = `${request.headers.get('x-forwarded-for') ?? 'local'}|${username.toLowerCase()}`
-  if (tooManyAttempts(key)) {
+  if (checkRate(key, LOGIN_RATE_MAX)) {
     return NextResponse.json(
       { error: 'Thử quá nhiều lần. Chờ khoảng 15 phút rồi thử lại.' },
       { status: 429 },
@@ -81,11 +56,11 @@ export async function POST(request: NextRequest) {
 
   const account = await verifyCredentials(username, password)
   if (!account) {
-    recordAttempt(key)
+    hitRate(key)
     return NextResponse.json({ error: 'Tên tài khoản hoặc mật khẩu không đúng.' }, { status: 401 })
   }
 
-  resetAttempts(key)
+  resetRate(key)
   const token = await createSessionToken(account)
   const response = NextResponse.json({ ok: true, username: account })
   // Behind Railway's TLS proxy, NODE_ENV=production + http between proxy and

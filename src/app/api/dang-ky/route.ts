@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createUserAccount } from '@/lib/db'
+import { checkRate, hitRate, REGISTER_RATE_MAX } from '@/lib/rate-limit'
 
 /**
  * POST /api/dang-ky  { username, password }
@@ -21,10 +22,19 @@ export async function POST(request: NextRequest) {
     )
   }
 
+  const regKey = `reg|${request.headers.get('x-forwarded-for') ?? 'local'}`
+  if (checkRate(regKey, REGISTER_RATE_MAX)) {
+    return NextResponse.json(
+      { error: 'Thử quá nhiều lần. Vui lòng chờ một lát rồi thử lại.' },
+      { status: 429 },
+    )
+  }
+
   let body: { username?: unknown; password?: unknown }
   try {
     body = await request.json()
   } catch {
+    hitRate(regKey)
     return NextResponse.json({ error: 'Yêu cầu không hợp lệ.' }, { status: 400 })
   }
 
@@ -32,12 +42,14 @@ export async function POST(request: NextRequest) {
   const password = typeof body.password === 'string' ? body.password : ''
 
   if (!USERNAME_RE.test(username)) {
+    hitRate(regKey)
     return NextResponse.json(
       { error: 'Tên tài khoản 3-24 ký tự, chỉ chữ thường/số/gạch dưới, không bắt đầu bằng số.' },
       { status: 400 },
     )
   }
   if (password.length < 6 || password.length > 128) {
+    hitRate(regKey)
     return NextResponse.json({ error: 'Mật khẩu phải từ 6 đến 128 ký tự.' }, { status: 400 })
   }
 

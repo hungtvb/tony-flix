@@ -385,3 +385,22 @@ export async function listWatchProgress(username: string, limit = 20): Promise<P
     .orderBy(desc(watchProgress.updatedAt))
     .limit(limit)
 }
+
+/**
+ * Health probe for the database connection. Runs a trivial `SELECT 1` with a
+ * 3s cap so it never hangs the health endpoint. Returns 'up' / 'down' /
+ * 'unconfigured' (no DATABASE_URL set).
+ */
+export async function checkDbHealth(): Promise<'up' | 'down' | 'unconfigured'> {
+  if (!hasDatabase()) return 'unconfigured'
+  try {
+    const { sql } = await getClient()
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('db health timeout')), 3000),
+    )
+    await Promise.race([sql`SELECT 1`, timeout])
+    return 'up'
+  } catch {
+    return 'down'
+  }
+}
