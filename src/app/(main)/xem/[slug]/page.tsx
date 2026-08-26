@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { ChevronLeft, ChevronRight, Info } from 'lucide-react'
 import PlayerFrame from '@/components/player-frame'
 import FilmCard from '@/components/film-card'
+import WatchTracker from '@/components/watch-tracker'
 import { fetchFilm, searchFilms } from '@/lib/nguonc'
 import type { EpisodeServer, FilmListItem } from '@/lib/types'
 
@@ -50,6 +51,8 @@ export default async function WatchPage({
 
   return (
     <div className="-mx-4 sm:-mx-8">
+      {/* Ghi tiến độ xem (client) — mỗi lần mở trang xem là 1 POST /api/tien-do */}
+      <WatchTracker slug={slug} fallbackServer={activeServer.server_name} fallbackEpisode={activeEp.slug} />
       {/* Player — edge to edge like Netflix */}
       <div className="relative bg-black">
         <PlayerFrame src={activeEp.embed} title={`${movie.name} — ${activeEp.name}`} />

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { ChevronLeft, Info, Play } from 'lucide-react'
 import FilmCard from '@/components/film-card'
 import CategoryRow from '@/components/category-row'
+import ContinueWatching from '@/components/continue-watching'
 import { fetchLatestFilms } from '@/lib/nguonc'
 import type { FilmListItem } from '@/lib/types'
 
@@ -110,8 +111,9 @@ export default async function HomePage() {
         )}
       </section>
 
-      {/* Rows: Mới cập nhật + danh mục đa dạng để user cuộn xuống */}
+      {/* Rows: Tiếp tục xem (theo user, client-side) + Mới cập nhật + danh mục */}
       <div className="pb-10">
+        <ContinueWatching />
         <FilmRow title="Mới cập nhật" films={rest} />
         {CATEGORY_ROWS.map((row) => (
           <CategoryRow key={row.title} {...row} />
