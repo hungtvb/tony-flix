@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm'
+import { sql, eq, and, desc } from 'drizzle-orm'
 import { pgTable, text, timestamp, primaryKey } from 'drizzle-orm/pg-core'
 import { drizzle, type PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
@@ -212,4 +212,96 @@ export async function findDbAccount(username: string): Promise<DbAccount | null>
     console.error('[db] lookup failed:', error)
     return null
   }
+}
+
+// ---------------------------------------------------------------------------
+// Favorites + watch progress
+// ---------------------------------------------------------------------------
+
+/** Lỗi đặc biệt khi DATABASE_URL chưa cấu hình — route handler đổi thành 503. */
+class NoDatabaseError extends Error {
+  code = 'NO_DB'
+}
+
+/** Client Drizzle cho API cá nhân hóa; throw NO_DB khi chưa cấu hình DATABASE_URL. */
+async function getDb(): Promise<PostgresJsDatabase<Record<string, never>>> {
+  if (!hasDatabase()) throw new NoDatabaseError('DATABASE_URL is not set')
+  const { db } = await getClient()
+  return db
+}
+
+/**
+ * Tạo bảng favorites/watch_progress nếu chưa có. ensureSchema() chỉ chạy khi có
+ * DATABASE_URL, còn các API cá nhân hóa cần kiểm tra riêng để trả 503 đẹp thay vì crash.
+ * Idempotent, cache theo promise.
+ */
+let favoritesSchemaReady: Promise<void> | null = null
+
+export function ensureFavoritesSchema(): Promise<void> {
+  if (!favoritesSchemaReady) {
+    favoritesSchemaReady = (async () => {
+      await ensureSchema() // tạo users trước (và xác nhận DB cấu hình)
+      const { sql } = await getClient()
+      await sql`
+        CREATE TABLE IF NOT EXISTS favorites (
+          user_id TEXT NOT NULL,
+          film_slug TEXT NOT NULL,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+          PRIMARY KEY (user_id, film_slug)
+        )
+      `
+    })().catch((error) => {
+      favoritesSchemaReady = null
+      throw error
+    })
+  }
+  return favoritesSchemaReady
+}
+
+export interface FavoriteRow {
+  filmSlug: string
+  createdAt: Date
+}
+
+/** Danh sách yêu thích một trang, mới nhất trước. */
+export async function listFavoritesPage(
+  username: string,
+  page: number,
+  pageSize: number,
+): Promise<{ items: FavoriteRow[]; total: number }> {
+  const database = await getDb()
+  const offset = (page - 1) * pageSize
+  const rows = await database
+    .select({ filmSlug: favorites.filmSlug, createdAt: favorites.createdAt })
+    .from(favorites)
+    .where(eq(favorites.userId, username))
+    .orderBy(desc(favorites.createdAt))
+    .limit(pageSize)
+    .offset(offset)
+  const totalRows = await database
+    .select({ count: sql<number>`count(*)::int` })
+    .from(favorites)
+    .where(eq(favorites.userId, username))
+  return { items: rows, total: totalRows[0]?.count ?? 0 }
+}
+
+/** Thêm yêu thích. Trả false nếu đã tồn tại từ trước. */
+export async function addFavorite(username: string, filmSlug: string): Promise<boolean> {
+  const database = await getDb()
+  try {
+    await database.insert(favorites).values({ userId: username, filmSlug })
+    return true
+  } catch (error) {
+    const err = error as { code?: string; cause?: { code?: string } }
+    if (err.code === '23505' || err.cause?.code === '23505') return false
+    throw error
+  }
+}
+
+/** Bỏ yêu thích. Idempotent — xoá không tồn tại vẫn ok. */
+export async function removeFavorite(username: string, filmSlug: string): Promise<void> {
+  const database = await getDb()
+  await database
+    .delete(favorites)
+    .where(and(eq(favorites.userId, username), eq(favorites.filmSlug, filmSlug)))
 }
