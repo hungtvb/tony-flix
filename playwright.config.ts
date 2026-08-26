@@ -40,7 +40,7 @@ export default defineConfig({
     },
     {
       name: 'guest',
-      testMatch: /auth\.spec\.ts|register\.spec\.ts|favorites.spec.ts|watch-progress.spec.ts|favorite-button.spec.ts|favorites-page.spec.ts|continue-watching.spec.ts/,
+      testMatch: /auth\.spec\.ts|register\.spec\.ts|favorites\.spec\.ts|watch-progress\.spec\.ts|favorite-button\.spec\.ts|favorites-page\.spec\.ts|continue-watching\.spec\.ts|mobile-nav\.spec\.ts/,
       use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
       // KHÔNG dependencies: không login trước — mọi request là khách thật
     },

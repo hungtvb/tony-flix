@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Heart, Search } from 'lucide-react'
 import UserMenu from '@/components/user-menu'
+import MobileNav from '@/components/mobile-nav'
 import { currentUser } from '@/lib/auth'
 
 export default async function Navbar() {
@@ -32,6 +33,8 @@ export default async function Navbar() {
         </div>
 
         <div className="flex items-center gap-2.5 sm:gap-3">
+          {/* Mobile: hamburger mở panel điều hướng (chỉ hiện < sm) */}
+          <MobileNav />
           {/* Mobile-only: link Yêu thích dạng icon (menu text chỉ hiện từ sm trở lên) */}
           <Link href="/yeu-thich" aria-label="Yêu thích" className="flex h-8 w-8 items-center justify-center rounded-md text-paper transition-colors hover:bg-white/10 sm:hidden">
             <Heart size={17} strokeWidth={2} aria-hidden />
