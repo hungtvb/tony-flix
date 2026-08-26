@@ -316,3 +316,72 @@ export async function isFavorite(username: string, filmSlug: string): Promise<bo
     .limit(1)
   return rows.length > 0
 }
+
+/**
+ * Bảo đảm bảng watch_progress tồn tại (idempotent, cache per-process).
+ * Tách khỏi ensureSchema để API trả 503 đẹp khi thiếu DATABASE_URL.
+ */
+let progressSchemaReady: Promise<void> | null = null
+
+export function ensureProgressSchema(): Promise<void> {
+  if (!progressSchemaReady) {
+    progressSchemaReady = (async () => {
+      await ensureSchema()
+      const { sql } = await getClient()
+      await sql`
+        CREATE TABLE IF NOT EXISTS watch_progress (
+          user_id TEXT NOT NULL,
+          film_slug TEXT NOT NULL,
+          episode TEXT NOT NULL,
+          server_name TEXT NOT NULL,
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+          PRIMARY KEY (user_id, film_slug)
+        )
+      `
+    })().catch((error) => {
+      progressSchemaReady = null
+      throw error
+    })
+  }
+  return progressSchemaReady
+}
+
+/** Upsert tiến độ xem: mỗi phim một dòng, mở tập mới thì ghi đè. */
+export async function upsertWatchProgress(
+  username: string,
+  filmSlug: string,
+  episode: string,
+  serverName: string,
+): Promise<void> {
+  const database = await getDb()
+  await database
+    .insert(watchProgress)
+    .values({ userId: username, filmSlug, episode, serverName })
+    .onConflictDoUpdate({
+      target: [watchProgress.userId, watchProgress.filmSlug],
+      set: { episode, serverName, updatedAt: new Date() },
+    })
+}
+
+export interface ProgressRow {
+  filmSlug: string
+  episode: string
+  serverName: string
+  updatedAt: Date
+}
+
+/** Top N phim đang xem dở của user, mới nhất trước. */
+export async function listWatchProgress(username: string, limit = 20): Promise<ProgressRow[]> {
+  const database = await getDb()
+  return database
+    .select({
+      filmSlug: watchProgress.filmSlug,
+      episode: watchProgress.episode,
+      serverName: watchProgress.serverName,
+      updatedAt: watchProgress.updatedAt,
+    })
+    .from(watchProgress)
+    .where(eq(watchProgress.userId, username))
+    .orderBy(desc(watchProgress.updatedAt))
+    .limit(limit)
+}
