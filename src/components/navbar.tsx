@@ -25,6 +25,9 @@ export default async function Navbar() {
             <Link href="/moi-cap-nhat" className="text-[14px] text-mist transition-colors hover:text-paper">
               Mới cập nhật
             </Link>
+            <Link href="/yeu-thich" className="text-[14px] text-mist transition-colors hover:text-paper">
+              Yêu thích
+            </Link>
           </div>
         </div>
 
