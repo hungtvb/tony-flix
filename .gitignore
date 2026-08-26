@@ -14,6 +14,11 @@
 .DS_Store
 *.pem
 
+# playwright
+/e2e-results/
+/e2e-report/
+/test-results/
+
 # debug
 npm-debug.log*
 yarn-debug.log*
