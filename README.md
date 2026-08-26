@@ -62,6 +62,10 @@ mật khẩu hash scrypt) — bảng tự tạo và seed user `admin` mặc đ�
 | `AUTH_USERS` | không | Fallback cứng: `user:pass,user2:pass2` (mặc định `admin:tonyflix`) |
 | `AUTH_SECRET` | production | Khóa ký cookie phiên HMAC-SHA256 |
 
+Người dùng tự tạo tài khoản tại `/dang-ky` (tên 3-24 ký tự chữ thường/số/gạch
+dưới, mật khẩu tối thiểu 6 ký tự) — đăng ký xong tự động đăng nhập. Cần có
+`DATABASE_URL`; chưa cấu hình DB thì trang đăng ký báo lỗi và tắt.
+
 Trên Railway: thêm service **Postgres** rồi tham chiếu `${{Postgres.DATABASE_URL}}`
 vào biến `DATABASE_URL` của app — schema + admin tự khởi tạo lúc chạy đầu.
 
