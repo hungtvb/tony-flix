@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createUserAccount } from '@/lib/db'
 import { checkRate, hitRate, REGISTER_RATE_MAX } from '@/lib/rate-limit'
+import { log } from '@/lib/logger'
 
 /**
  * POST /api/dang-ky  { username, password }
@@ -56,12 +57,14 @@ export async function POST(request: NextRequest) {
   try {
     const created = await createUserAccount(username, password)
     if (!created) {
+      log.warn('register_taken', { username })
       return NextResponse.json(
         { error: 'Tên tài khoản đã tồn tại. Chọn tên khác.' },
         { status: 409 },
       )
     }
   } catch {
+    log.error('register_failed', { username })
     return NextResponse.json({ error: 'Không tạo được tài khoản. Thử lại sau.' }, { status: 500 })
   }
 
@@ -69,6 +72,7 @@ export async function POST(request: NextRequest) {
   const { createSessionToken } = await import('@/lib/session')
   const { SESSION_COOKIE, sessionCookieOptions } = await import('@/lib/session')
   const token = await createSessionToken(username)
+  log.info('register_ok', { username })
   const response = NextResponse.json({ ok: true, username }, { status: 201 })
   const proto = request.headers.get('x-forwarded-proto') ?? 'http'
   response.cookies.set(SESSION_COOKIE, token, sessionCookieOptions(proto === 'https'))

@@ -3,6 +3,7 @@ import { pgTable, text, timestamp, primaryKey } from 'drizzle-orm/pg-core'
 import { drizzle, type PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import { scryptSync, timingSafeEqual, randomBytes } from 'node:crypto'
+import { log } from '@/lib/logger'
 
 
 /**
@@ -130,7 +131,7 @@ async function ensureSchema(): Promise<void> {
         ON CONFLICT (id) DO NOTHING
         RETURNING id
       `
-      if (seeded.length > 0) console.log('[db] seeded default admin account')
+      if (seeded.length > 0) log.info('db_seeded_admin')
       await sql`
         CREATE TABLE IF NOT EXISTS favorites (
           user_id TEXT NOT NULL,
@@ -209,7 +210,7 @@ export async function findDbAccount(username: string): Promise<DbAccount | null>
       },
     }
   } catch (error) {
-    console.error('[db] lookup failed:', error)
+    log.error('db_lookup_failed', { username, error: String(error) })
     return null
   }
 }

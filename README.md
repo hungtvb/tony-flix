@@ -1,5 +1,7 @@
 # TonyFlix
 
+[![CI](https://github.com/hungtvb/tony-flix/actions/workflows/ci.yml/badge.svg)](https://github.com/hungtvb/tony-flix/actions/workflows/ci.yml)
+
 Xem phim online HD Vietsub — web film xịn xây trên nguồn dữ liệu mở [NguonC API](https://phim.nguonc.com), thiết kế theo style **Linear** ([styles.refero.design](https://styles.refero.design)).
 
 ## Stack
@@ -83,6 +85,54 @@ npx playwright test
 # hoặc một bước:
 ./scripts/e2e-with-auth.sh
 ```
+
+---
+
+## Vận hành
+
+### Biến môi trường đầy đủ
+
+| Biến | Bắt buộc | Ý nghĩa | Mặc định |
+|---|---|---|---|
+| `DATABASE_URL` | khuyến nghị | Chuỗi kết nối Postgres (`postgres://user:pass@host:5432/db`) | — |
+| `AUTH_USERS` | không | Fallback cứng: `user:pass,user2:pass2` | `admin:tonyflix` |
+| `AUTH_SECRET` | production | Khóa ký cookie phiên HMAC-SHA256 — **đổi ngay khi lên production** | — |
+| `RATE_LIMIT_MAX` | không | Số lần thử đăng nhập sai tối đa / 15 phút / IP+user | `10` |
+| `REGISTER_RATE_LIMIT_MAX` | không | Số lần đăng ký sai tối đa / 15 phút / IP | `5` |
+| `RATE_LIMIT_WINDOW_MS` | không | Cửa sổ rate-limit (ms) | `900000` |
+
+### Deploy trên Railway
+
+1. Tạo project, thêm service **Postgres** (tự động cấp `DATABASE_URL`).
+2. Link repo, set `DATABASE_URL = ${{Postgres.DATABASE_URL}}`, `AUTH_SECRET` (chuỗi
+   ngẫu nhiên ≥ 32 ký tự).
+3. Build + start: `npm run build` rồi `npm start` (Railway phát hiện Next.js tự động).
+4. Schema + seed admin `admin/tonyflix` tự khởi tạo lần đầu app chạm DB.
+
+### Backup & restore Postgres
+
+```bash
+# Backup
+pg_dump "$DATABASE_URL" > backup.sql
+# Restore (vào DB mới hoặc sạch)
+psql "$DATABASE_URL" < backup.sql
+```
+
+### Health check
+
+Railway nên ping `GET /api/health` — luôn trả HTTP 200 khi app sống, kèm
+`{ "ok": true, "db": "up" | "down" | "unconfigured", "uptime": <s> }`. DB chết chỉ
+làm cờ `db: down`, không kill pod.
+
+### Rotate AUTH_SECRET
+
+Đổi giá trị trên Railway rồi redeploy. Mọi phiên đăng nhập cũ bị văng (chấp nhận) —
+nên rotate giờ thấp điểm.
+
+### Rollback
+
+Trên Railway: redeploy commit cũ (Deploy → Deploy previously deployed commit). Mọi
+build đều qua CI xanh trước khi lên production.
 
 ---
 

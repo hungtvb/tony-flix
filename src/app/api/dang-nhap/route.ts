@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createSessionToken, sessionCookieOptions, SESSION_COOKIE } from '@/lib/session'
 import { findDbAccount } from '@/lib/db'
 import { checkRate, hitRate, resetRate, LOGIN_RATE_MAX } from '@/lib/rate-limit'
+import { log } from '@/lib/logger'
 
 /**
  * POST /api/dang-nhap  { username, password }
@@ -57,11 +58,13 @@ export async function POST(request: NextRequest) {
   const account = await verifyCredentials(username, password)
   if (!account) {
     hitRate(key)
+    log.warn('login_failed', { username })
     return NextResponse.json({ error: 'Tên tài khoản hoặc mật khẩu không đúng.' }, { status: 401 })
   }
 
   resetRate(key)
   const token = await createSessionToken(account)
+  log.info('login_ok', { username: account })
   const response = NextResponse.json({ ok: true, username: account })
   // Behind Railway's TLS proxy, NODE_ENV=production + http between proxy and
   // container — trust x-forwarded-proto instead of the raw connection scheme.

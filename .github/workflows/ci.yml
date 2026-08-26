@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-e2e:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: tonyflix
+          POSTGRES_PASSWORD: tonyflix
+          POSTGRES_DB: tonyflix
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U tonyflix"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgres://tonyflix:tonyflix@localhost:5432/tonyflix
+      AUTH_USERS: admin:tonyflix
+      AUTH_SECRET: ci-secret-tonyflix
+      # Widen rate limits so e2e can register many throwaway accounts.
+      RATE_LIMIT_MAX: 100
+      REGISTER_RATE_LIMIT_MAX: 100
+      RATE_LIMIT_WINDOW_MS: 600000
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build, start & run e2e
+        run: ./scripts/e2e-with-auth.sh
+
+      - name: Upload e2e report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: e2e-report/
+          retention-days: 7
