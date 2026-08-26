@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { fetchFilm } from '@/lib/nguonc'
-import type { EpisodeServer } from '@/lib/types'
+import PlayerFrame from '@/components/player-frame'
+import FilmCard from '@/components/film-card'
+import { fetchFilm, searchFilms } from '@/lib/nguonc'
+import type { EpisodeServer, FilmListItem } from '@/lib/types'
 
 export const revalidate = 60
 
@@ -32,16 +34,12 @@ export default async function WatchPage({
     notFound()
   }
 
-  // Resolve active server + episode (default: first of first non-empty server)
   const servers: EpisodeServer[] = movie.episodes.filter((s) => s.items.length > 0)
-  const activeServer =
-    servers.find((s) => s.server_name === query.sv) ?? servers[0]
-  const activeEp =
-    activeServer?.items.find((e) => e.slug === query.ep) ?? activeServer?.items[0]
+  const activeServer = servers.find((s) => s.server_name === query.sv) ?? servers[0]
+  const activeEp = activeServer?.items.find((e) => e.slug === query.ep) ?? activeServer?.items[0]
 
-  if (!activeEp) notFound()
+  if (!activeEp || !activeServer) notFound()
 
-  // Flat episode navigation across the active server
   const epIndex = activeServer.items.findIndex((e) => e.slug === activeEp.slug)
   const prev = epIndex > 0 ? activeServer.items[epIndex - 1] : undefined
   const next = epIndex < activeServer.items.length - 1 ? activeServer.items[epIndex + 1] : undefined
@@ -50,98 +48,118 @@ export default async function WatchPage({
     `/xem/${slug}?${new URLSearchParams({ ...(svName ? { sv: svName } : {}), ...(epSlug ? { ep: epSlug } : {}) }).toString()}`
 
   return (
-    <div className="pt-6">
-      {/* Player */}
-      <div className="overflow-hidden rounded-xl bg-carbon ring-1 ring-graphite">
-        <div className="relative aspect-video w-full bg-void">
-          <iframe
-            src={activeEp.embed}
-            title={`${movie.name} — ${activeEp.name}`}
-            allowFullScreen
-            allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-            referrerPolicy="origin"
-            className="absolute inset-0 h-full w-full border-0"
-          />
-        </div>
+    <div className="-mx-4 sm:-mx-8">
+      {/* Player — edge to edge like Netflix */}
+      <div className="relative bg-black">
+        <PlayerFrame src={activeEp.embed} title={`${movie.name} — ${activeEp.name}`} />
       </div>
 
-      {/* Title + episode nav */}
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-[20px] font-medium tracking-tight text-paper">{movie.name}</h1>
-          <p className="mt-0.5 font-mono text-[12px] text-ash">
-            {activeServer?.server_name} · tập {activeEp.name}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {prev ? (
-            <Link
-              href={watchHref(prev.slug, activeServer.server_name)}
-              className="inline-flex h-8 items-center rounded-md border border-graphite px-3 text-[13px] text-mist hover:border-smoke hover:text-paper"
-            >
-              ← Tập trước
-            </Link>
-          ) : null}
-          {next ? (
-            <Link
-              href={watchHref(next.slug, activeServer.server_name)}
-              className="inline-flex h-8 items-center rounded-md bg-acid-lime px-3 text-[13px] font-medium text-void hover:opacity-90"
-            >
-              Tập sau →
-            </Link>
-          ) : null}
-        </div>
-      </div>
-
-      {/* Server tabs */}
-      <section className="mt-8 space-y-6">
-        <div>
-          <h2 className="mb-3 font-mono text-[13px] uppercase tracking-wide text-ash">Danh sách tập</h2>
-          <div className="mb-4 flex flex-wrap gap-2">
-            {servers.map((server) => (
-              <Link
-                key={server.server_name}
-                href={watchHref(server.items[0]?.slug, server.server_name)}
-                className={`inline-flex h-7 items-center rounded-full px-3 text-[12px] transition-colors ${
-                  server.server_name === activeServer?.server_name
-                    ? 'bg-white/10 text-paper'
-                    : 'text-fog hover:bg-white/5 hover:text-mist'
-                }`}
-              >
-                {server.server_name}
-              </Link>
-            ))}
+      <div className="mx-auto max-w-7xl px-4 pb-16 sm:px-8">
+        {/* Title + episode nav */}
+        <div className="mt-5 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 className="text-[24px] font-bold tracking-tight text-paper">{movie.name}</h1>
+            <p className="mt-1 text-[13px] text-fog">
+              {activeServer.server_name} · {activeEp.name}
+            </p>
           </div>
-          <div className="flex max-h-44 flex-wrap gap-2 overflow-y-auto pr-1">
-            {activeServer?.items.map((ep) =>
+          <div className="flex items-center gap-2.5">
+            <Link
+              href={`/phim/${slug}`}
+              className="inline-flex h-9 items-center rounded bg-white/10 px-3.5 text-[13px] font-medium text-paper transition-colors hover:bg-white/20"
+            >
+              Thông tin
+            </Link>
+            {prev ? (
+              <Link
+                href={watchHref(prev.slug, activeServer.server_name)}
+                className="inline-flex h-9 items-center rounded border border-white/25 px-3.5 text-[13px] text-paper transition-colors hover:bg-white/10"
+              >
+                ← Tập trước
+              </Link>
+            ) : null}
+            {next ? (
+              <Link
+                href={watchHref(next.slug, activeServer.server_name)}
+                className="inline-flex h-9 items-center gap-1.5 rounded bg-paper px-4 text-[13px] font-semibold text-void transition-colors hover:bg-white/80"
+              >
+                Tập sau →
+              </Link>
+            ) : null}
+          </div>
+        </div>
+
+        {/* Episodes */}
+        <section className="mt-7">
+          {servers.length > 1 ? (
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              <span className="mr-1 text-[12px] uppercase tracking-wide text-ash">Máy chủ</span>
+              {servers.map((server) => (
+                <Link
+                  key={server.server_name}
+                  href={watchHref(server.items[0]?.slug, server.server_name)}
+                  className={`inline-flex h-8 items-center rounded px-3 text-[13px] transition-colors ${
+                    server.server_name === activeServer.server_name
+                      ? 'bg-paper font-semibold text-void'
+                      : 'bg-white/5 text-mist hover:bg-white/15 hover:text-paper'
+                  }`}
+                >
+                  {server.server_name}
+                </Link>
+              ))}
+            </div>
+          ) : null}
+          <div className="flex max-h-40 flex-wrap gap-2 overflow-y-auto pr-1">
+            {activeServer.items.map((ep) =>
               ep.slug === activeEp.slug ? (
-                <span key={ep.slug} className="inline-flex h-8 min-w-14 items-center justify-center rounded-md bg-acid-lime px-3 text-[13px] font-medium text-void">
+                <span
+                  key={ep.slug}
+                  className="inline-flex h-9 min-w-14 items-center justify-center rounded bg-paper px-3 text-[13px] font-bold text-void"
+                >
                   {ep.name}
                 </span>
               ) : (
                 <Link
                   key={ep.slug}
                   href={watchHref(ep.slug, activeServer.server_name)}
-                  className="inline-flex h-8 min-w-14 items-center justify-center rounded-md border border-graphite px-3 text-[13px] text-mist hover:border-smoke hover:text-paper"
+                  className="inline-flex h-9 min-w-14 items-center justify-center rounded bg-white/5 px-3 text-[13px] text-mist transition-colors hover:bg-white/20 hover:text-paper"
                 >
                   {ep.name}
                 </Link>
               ),
             )}
           </div>
-        </div>
-      </section>
+        </section>
 
-      <p className="mt-8 text-[13px] text-ash">
-        Player là embed từ nguồn phát bên thứ ba. Nếu video không chạy, thử đổi server khác ở trên.
-      </p>
-
-      {/* Back to detail */}
-      <p className="mt-2">
-        <Link href={`/phim/${slug}`} className="text-[13px] text-mist underline-offset-4 hover:text-paper hover:underline">
-          ← Về trang phim
-        </Link>
-      </p>
+        {/* Related */}
+        <RelatedRow slug={slug} currentName={movie.name} />
+      </div>
     </div>
+  )
+}
+
+/** Server component fetching related films; kept separate to isolate failures. */
+async function RelatedRow({ slug, currentName }: { slug: string; currentName: string }) {
+  let related: FilmListItem[] = []
+  try {
+    const guess = currentName.split(/[:\-–]/)[0].trim()
+    const res = await searchFilms(guess, 1)
+    related = res.items.filter((f) => f.slug !== slug).slice(0, 12)
+  } catch {
+    related = []
+  }
+
+  if (related.length === 0) return null
+  return (
+    <section className="mt-10">
+      <h2 className="mb-3 text-[20px] font-semibold tracking-tight text-paper">Có thể bạn cũng thích</h2>
+      <div className="no-scrollbar -mx-4 flex gap-2.5 overflow-x-auto px-4 pb-2 sm:-mx-8 sm:gap-3 sm:px-8">
+        {related.map((film) => (
+          <div key={film.slug} className="w-[132px] shrink-0 sm:w-[152px] md:w-[168px]">
+            <FilmCard film={film} />
+          </div>
+        ))}
+      </div>
+    </section>
   )
 }

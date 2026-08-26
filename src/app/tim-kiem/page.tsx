@@ -22,22 +22,28 @@ export default async function SearchPage({
   }
 
   return (
-    <div className="pt-10">
-      <h1 className="text-[32px] font-medium tracking-tight text-paper">
-        Tìm kiếm <span className="text-acid-lime">{keyword ? `“${keyword}”` : ''}</span>
+    <div className="pt-24">
+      <h1 className="text-[28px] font-bold tracking-tight text-paper">
+        {keyword ? (
+          <>
+            Kết quả cho <span className="text-acid-lime">“{keyword}”</span>
+          </>
+        ) : (
+          'Tìm phim'
+        )}
       </h1>
 
       {!keyword ? (
-        <p className="mt-6 text-[15px] text-fog">Nhập từ khóa vào ô tìm kiếm phía trên để bắt đầu.</p>
+        <p className="mt-5 text-[15px] text-fog">Nhập tên phim vào ô tìm kiếm phía trên.</p>
       ) : !data || data.items.length === 0 ? (
-        <p className="mt-6 text-[15px] text-fog">Không tìm thấy phim nào khớp “{keyword}”.</p>
+        <p className="mt-5 text-[15px] text-fog">Không tìm thấy phim nào khớp “{keyword}”.</p>
       ) : (
         <>
-          <p className="mt-2 font-mono text-[12px] text-ash">
-            {data.paginate.total_items.toLocaleString('vi-VN')} kết quả · trang {data.paginate.current_page}/
-            {data.paginate.total_page}
+          <p className="mt-2 text-[13px] text-fog">
+            {data.paginate.total_items.toLocaleString('vi-VN')} kết quả · Trang{' '}
+            {data.paginate.current_page}/{data.paginate.total_page}
           </p>
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          <div className="mt-6 grid grid-cols-3 gap-2.5 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 sm:gap-3">
             {data.items.map((film) => (
               <FilmCard key={film.slug} film={film} />
             ))}

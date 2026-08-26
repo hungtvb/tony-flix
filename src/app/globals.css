@@ -1,20 +1,21 @@
 @import "tailwindcss";
 
-/* Linear — midnight precision instrument (styles.refero.design) */
+/* TonyFlix — Netflix-grade dark cinema */
 @theme {
   /* Colors */
-  --color-void: #08090a;
-  --color-carbon: #0f1011;
-  --color-obsidian: #161718;
-  --color-graphite: #23252a;
-  --color-smoke: #383b3f;
-  --color-ash: #62666d;
-  --color-fog: #8a8f98;
-  --color-mist: #d0d6e0;
-  --color-bone: #e5e5e6;
+  --color-void: #0b0b0f;
+  --color-carbon: #14141c;
+  --color-obsidian: #1c1c26;
+  --color-graphite: #2a2a36;
+  --color-smoke: #3d3d4d;
+  --color-ash: #80808e;
+  --color-fog: #a3a3b2;
+  --color-mist: #d6d6e0;
+  --color-bone: #ececf2;
   --color-paper: #ffffff;
-  --color-acid-lime: #e4f222;
-  --color-pulse-green: #27a644;
+  --color-acid-lime: #e50914;      /* Netflix red — primary accent */
+  --color-acid-lime-hover: #f6121d;
+  --color-pulse-green: #46d369;    /* Netflix green — availability */
   --color-coral-red: #eb5757;
   --color-signal-teal: #02b8cc;
   --color-iris-violet: #6366f1;
@@ -32,7 +33,7 @@
   --text-heading-sm: 32px;
   --text-heading: 48px;
 
-  /* Radius vocabulary: 2 / 4 / 6 / 12 / pill */
+  /* Radius vocabulary */
   --radius-sm: 2px;
   --radius-md: 6px;
   --radius-xl: 12px;
@@ -57,7 +58,7 @@ body {
 
 ::selection {
   background: var(--color-acid-lime);
-  color: var(--color-void);
+  color: var(--color-paper);
 }
 
 /* Hairline scrollbars to match the precision aesthetic */
@@ -72,4 +73,13 @@ body {
 }
 ::-webkit-scrollbar-track {
   background: transparent;
+}
+
+/* Hide horizontal scrollbar on film rows (Netflix style) */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }

@@ -15,28 +15,28 @@ export default async function LatestPage({ searchParams }: { searchParams: Promi
   }
 
   return (
-    <div className="pt-10">
+    <div className="pt-24">
       <div className="mb-6 flex items-baseline justify-between">
-        <h1 className="text-[32px] font-medium tracking-tight text-paper">Mới cập nhật</h1>
+        <h1 className="text-[28px] font-bold tracking-tight text-paper">Mới cập nhật</h1>
         {data ? (
-          <span className="font-mono text-[12px] text-ash">
-            trang {data.paginate.current_page}/{data.paginate.total_page}
+          <span className="text-[13px] text-fog">
+            Trang {data.paginate.current_page}/{data.paginate.total_page}
           </span>
         ) : null}
       </div>
       {!data ? (
-        <p className="rounded-lg border border-graphite bg-carbon px-4 py-6 text-center text-[14px] text-fog">
-          Nguồn phim đang bận (Cloudflare chặn IP server). Vui lòng tải lại trang sau vài giây.
+        <p className="rounded-lg bg-carbon px-4 py-8 text-center text-[14px] text-fog">
+          Đang tải phim. Vui lòng thử lại sau ít phút.
         </p>
       ) : (
-      <>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-        {data.items.map((film) => (
-          <FilmCard key={film.slug} film={film} />
-        ))}
-      </div>
-      <Pagination paginate={data.paginate} basePath="/moi-cap-nhat" />
-      </>
+        <>
+          <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 sm:gap-3">
+            {data.items.map((film) => (
+              <FilmCard key={film.slug} film={film} />
+            ))}
+          </div>
+          <Pagination paginate={data.paginate} basePath="/moi-cap-nhat" />
+        </>
       )}
     </div>
   )

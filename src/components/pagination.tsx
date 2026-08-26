@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import type { Paginate } from '@/lib/types'
 
-/** Linear-style pagination: quiet pills, active page in acid-lime. */
+/** Netflix-style pagination: quiet pills, active page in white. */
 export default function Pagination({
   paginate,
   basePath,
@@ -44,7 +44,7 @@ export default function Pagination({
       ) : null}
       {pages.map((p) =>
         p === page ? (
-          <span key={p} className={`${pill} bg-acid-lime font-medium text-void`}>
+          <span key={p} className={`${pill} bg-paper font-semibold text-void`}>
             {p}
           </span>
         ) : (
