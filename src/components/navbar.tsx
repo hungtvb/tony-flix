@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Search } from 'lucide-react'
+import { Heart, Search } from 'lucide-react'
 import UserMenu from '@/components/user-menu'
 import { currentUser } from '@/lib/auth'
 
@@ -32,6 +32,10 @@ export default async function Navbar() {
         </div>
 
         <div className="flex items-center gap-2.5 sm:gap-3">
+          {/* Mobile-only: link Yêu thích dạng icon (menu text chỉ hiện từ sm trở lên) */}
+          <Link href="/yeu-thich" aria-label="Yêu thích" className="flex h-8 w-8 items-center justify-center rounded-md text-paper transition-colors hover:bg-white/10 sm:hidden">
+            <Heart size={17} strokeWidth={2} aria-hidden />
+          </Link>
           <form action="/tim-kiem" className="flex items-center gap-2">
             <div className="relative flex items-center">
               <Search size={15} strokeWidth={2} className="pointer-events-none absolute left-2.5 text-ash sm:left-3" aria-hidden />

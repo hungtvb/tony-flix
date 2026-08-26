@@ -28,13 +28,15 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 }, storageState: 'e2e/.auth/user.json' },
       dependencies: ['setup'],
-      testIgnore: /auth\.(setup|spec)\.ts/,
+      // auth.spec + favorites/watch-progress API specs là guest-only (cần trạng thái chưa login)
+      testIgnore: /auth\.(setup|spec)\.ts|favorites\.spec\.ts|watch-progress\.spec\.ts/,
     },
     {
       name: 'mobile',
       use: { ...devices['Pixel 7'], storageState: 'e2e/.auth/user.json' }, // Chromium-based (WebKit not installed)
       dependencies: ['setup'],
-      testIgnore: /auth\.(setup|spec)\.ts/,
+      // auth.spec + favorites/watch-progress API specs là guest-only (cần trạng thái chưa login)
+      testIgnore: /auth\.(setup|spec)\.ts|favorites\.spec\.ts|watch-progress\.spec\.ts/,
     },
     {
       name: 'guest',

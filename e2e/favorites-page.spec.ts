@@ -27,7 +27,21 @@ test('trang yêu thích: rỗng → thêm tim → hiện card', async ({ page })
   const detailHref = await cards.nth(1).getAttribute('href')
   await page.goto(detailHref!)
   const heart = page.getByRole('button', { name: /yêu thích/i })
-  await heart.click()
+  // Click có thể rơi trước khi React hydration xong (POST không bắn) →
+  // thử lại tối đa 3 lần, mỗi lần đợi POST /api/yeu-thich tối đa 8s.
+  let posted: ReturnType<typeof page.waitForResponse> extends Promise<infer T> ? T : never | null = null
+  for (let attempt = 0; attempt < 3 && !posted; attempt++) {
+    const postDone = page
+      .waitForResponse(
+        (r) => r.url().includes('/api/yeu-thich') && r.request().method() === 'POST',
+        { timeout: 8_000 },
+      )
+      .catch(() => null)
+    await heart.click()
+    posted = await postDone
+  }
+  expect(posted).toBeTruthy()
+  expect(posted!.status()).toBe(201)
   await expect(heart).toHaveAttribute('aria-pressed', 'true', { timeout: 10_000 })
 
   // Trang yêu thích giờ có card của đúng phim đó
