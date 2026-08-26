@@ -4,6 +4,7 @@ import { drizzle, type PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import { scryptSync, timingSafeEqual, randomBytes } from 'node:crypto'
 
+
 /**
  * TonyFlix database — PostgreSQL + Drizzle ORM (Node runtime only).
  *
@@ -102,6 +103,31 @@ async function ensureSchema(): Promise<void> {
     })
   }
   return schemaReady
+}
+
+// ---------------------------------------------------------------------------
+// Account creation (registration)
+// ---------------------------------------------------------------------------
+
+/**
+ * Create a new account. Returns the username on success, null when the name
+ * is already taken. Throws on DB failure.
+ */
+export async function createUserAccount(username: string, password: string): Promise<string | null> {
+  if (!hasDatabase()) return null
+  await ensureSchema()
+  const { db } = await getClient()
+  const id = username.trim().toLowerCase()
+  try {
+    await db.insert(users).values({ id, passwordHash: hashPassword(password) })
+    return id
+  } catch (error) {
+    // Postgres unique_violation = username already registered. Newer drizzle
+    // wraps driver errors, so check both the error and its cause chain.
+    const err = error as { code?: string; cause?: { code?: string } }
+    if (err.code === '23505' || err.cause?.code === '23505') return null
+    throw error
+  }
 }
 
 // ---------------------------------------------------------------------------
