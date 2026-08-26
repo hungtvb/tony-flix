@@ -7,7 +7,7 @@ export default function NotFound() {
       <h1 className="-mt-2 text-[22px] font-semibold tracking-tight text-paper">Không tìm thấy trang này</h1>
       <Link
         href="/"
-        className="mt-2 inline-flex h-10 items-center rounded bg-paper px-5 text-[14px] font-semibold text-void transition-colors hover:bg-white/80"
+        className="mt-2 inline-flex h-10 items-center rounded-md bg-acid-lime px-5 text-[14px] font-medium text-void transition-opacity hover:opacity-90"
       >
         Về trang chủ
       </Link>

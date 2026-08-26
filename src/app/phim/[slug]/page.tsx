@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { Play } from 'lucide-react'
 import FilmCard from '@/components/film-card'
 import { fetchFilm, fetchLatestFilms, searchFilms } from '@/lib/nguonc'
 import type { CategoryGroup, EpisodeServer, FilmListItem } from '@/lib/types'
@@ -130,11 +131,9 @@ export default async function FilmPage({ params }: { params: Promise<{ slug: str
               {movie.episodes[0]?.items?.length ? (
                 <Link
                   href={`/xem/${slug}?ep=${encodeURIComponent(movie.episodes[0].items[0].slug)}`}
-                  className="inline-flex h-11 items-center gap-2 rounded bg-paper px-7 text-[15px] font-semibold text-void transition-colors hover:bg-white/80"
+                  className="mt-7 inline-flex h-11 items-center gap-2 rounded-md bg-acid-lime px-7 text-[15px] font-semibold text-void transition-opacity hover:opacity-90"
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                    <path d="M8 5.14v13.72L19 12 8 5.14z" />
-                  </svg>
+                  <Play size={16} strokeWidth={2.5} fill="currentColor" aria-hidden />
                   Xem ngay
                 </Link>
               ) : (

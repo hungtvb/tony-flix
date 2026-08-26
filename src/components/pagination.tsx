@@ -1,7 +1,8 @@
 import Link from 'next/link'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type { Paginate } from '@/lib/types'
 
-/** Netflix-style pagination: quiet pills, active page in white. */
+/** Quiet pill pagination, active page in acid-lime. */
 export default function Pagination({
   paginate,
   basePath,
@@ -30,8 +31,8 @@ export default function Pagination({
   return (
     <nav className="mt-10 flex items-center justify-center gap-1.5" aria-label="Pagination">
       {page > 1 ? (
-        <Link href={hrefFor(page - 1)} className={`${pill} border border-graphite text-mist hover:border-smoke hover:text-paper`}>
-          ←
+        <Link href={hrefFor(page - 1)} className={`${pill} border border-graphite text-mist hover:border-smoke hover:text-paper`} aria-label="Trang trước">
+          <ChevronLeft size={15} strokeWidth={2} aria-hidden />
         </Link>
       ) : null}
       {windowStart > 1 ? (
@@ -44,7 +45,7 @@ export default function Pagination({
       ) : null}
       {pages.map((p) =>
         p === page ? (
-          <span key={p} className={`${pill} bg-paper font-semibold text-void`}>
+          <span key={p} className={`${pill} bg-acid-lime font-medium text-void`}>
             {p}
           </span>
         ) : (
@@ -62,8 +63,8 @@ export default function Pagination({
         </>
       ) : null}
       {page < total ? (
-        <Link href={hrefFor(page + 1)} className={`${pill} border border-graphite text-mist hover:border-smoke hover:text-paper`}>
-          →
+        <Link href={hrefFor(page + 1)} className={`${pill} border border-graphite text-mist hover:border-smoke hover:text-paper`} aria-label="Trang sau">
+          <ChevronRight size={15} strokeWidth={2} aria-hidden />
         </Link>
       ) : null}
     </nav>

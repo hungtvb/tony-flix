@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { ChevronLeft, ChevronRight, Info } from 'lucide-react'
 import PlayerFrame from '@/components/player-frame'
 import FilmCard from '@/components/film-card'
 import { fetchFilm, searchFilms } from '@/lib/nguonc'
@@ -66,24 +67,27 @@ export default async function WatchPage({
           <div className="flex items-center gap-2.5">
             <Link
               href={`/phim/${slug}`}
-              className="inline-flex h-9 items-center rounded bg-white/10 px-3.5 text-[13px] font-medium text-paper transition-colors hover:bg-white/20"
+              className="inline-flex h-9 items-center gap-1.5 rounded-md bg-white/10 px-3.5 text-[13px] font-medium text-paper transition-colors hover:bg-white/20"
             >
+              <Info size={14} strokeWidth={2} aria-hidden />
               Thông tin
             </Link>
             {prev ? (
               <Link
                 href={watchHref(prev.slug, activeServer.server_name)}
-                className="inline-flex h-9 items-center rounded border border-white/25 px-3.5 text-[13px] text-paper transition-colors hover:bg-white/10"
+                className="inline-flex h-9 items-center gap-1 rounded-md border border-graphite px-3.5 text-[13px] text-mist transition-colors hover:border-smoke hover:text-paper"
               >
-                ← Tập trước
+                <ChevronLeft size={15} strokeWidth={2} aria-hidden />
+                Tập trước
               </Link>
             ) : null}
             {next ? (
               <Link
                 href={watchHref(next.slug, activeServer.server_name)}
-                className="inline-flex h-9 items-center gap-1.5 rounded bg-paper px-4 text-[13px] font-semibold text-void transition-colors hover:bg-white/80"
+                className="inline-flex h-9 items-center gap-1 rounded-md bg-acid-lime px-4 text-[13px] font-semibold text-void transition-opacity hover:opacity-90"
               >
-                Tập sau →
+                Tập sau
+                <ChevronRight size={15} strokeWidth={2} aria-hidden />
               </Link>
             ) : null}
           </div>
@@ -98,9 +102,9 @@ export default async function WatchPage({
                 <Link
                   key={server.server_name}
                   href={watchHref(server.items[0]?.slug, server.server_name)}
-                  className={`inline-flex h-8 items-center rounded px-3 text-[13px] transition-colors ${
+                  className={`inline-flex h-8 items-center rounded-md px-3 text-[13px] transition-colors ${
                     server.server_name === activeServer.server_name
-                      ? 'bg-paper font-semibold text-void'
+                      ? 'bg-acid-lime font-semibold text-void'
                       : 'bg-white/5 text-mist hover:bg-white/15 hover:text-paper'
                   }`}
                 >
@@ -114,7 +118,7 @@ export default async function WatchPage({
               ep.slug === activeEp.slug ? (
                 <span
                   key={ep.slug}
-                  className="inline-flex h-9 min-w-14 items-center justify-center rounded bg-paper px-3 text-[13px] font-bold text-void"
+                  className="inline-flex h-9 min-w-14 items-center justify-center rounded-md bg-acid-lime px-3 text-[13px] font-semibold text-void"
                 >
                   {ep.name}
                 </span>

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { Play } from 'lucide-react'
 import type { FilmListItem } from '@/lib/types'
 
 function episodeLabel(current: string, total: number): string {
@@ -19,7 +20,7 @@ export default function FilmCard({ film }: { film: FilmListItem }) {
       href={`/phim/${film.slug}`}
       className="group relative block rounded-lg outline-none transition-all duration-200 ease-out hover:z-10 hover:scale-[1.06] focus-visible:scale-[1.06]"
     >
-      <div className="relative aspect-[2/3] w-full overflow-hidden rounded-lg bg-obsidian shadow-lg shadow-black/50 ring-1 ring-white/5 transition-shadow group-hover:ring-white/25">
+      <div className="relative aspect-[2/3] w-full overflow-hidden rounded-lg bg-obsidian shadow-lg shadow-black/50 ring-1 ring-white/5 transition-shadow group-hover:ring-acid-lime/50">
         <Image
           src={poster}
           alt={film.name}
@@ -31,10 +32,8 @@ export default function FilmCard({ film }: { film: FilmListItem }) {
         {/* Hover veil + quick play */}
         <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/95 via-black/20 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100">
           <div className="w-full p-2.5">
-            <span className="mb-1.5 inline-flex items-center gap-1.5 rounded-full bg-paper px-2.5 py-1 text-[11px] font-semibold text-void">
-              <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                <path d="M8 5.14v13.72L19 12 8 5.14z" />
-              </svg>
+            <span className="mb-1.5 inline-flex items-center gap-1.5 rounded-md bg-acid-lime px-2.5 py-1 text-[11px] font-semibold text-void">
+              <Play size={10} strokeWidth={2.5} fill="currentColor" aria-hidden />
               Xem ngay
             </span>
             <p className="line-clamp-2 text-[12px] font-medium leading-snug text-paper">
@@ -46,12 +45,12 @@ export default function FilmCard({ film }: { film: FilmListItem }) {
         {/* Top-right badges */}
         <div className="absolute right-1.5 top-1.5 flex flex-col items-end gap-1">
           {isNew ? (
-            <span className="rounded-sm bg-acid-lime px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-paper">
+            <span className="rounded-sm bg-acid-lime px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-void">
               Mới
             </span>
           ) : null}
           {film.quality ? (
-            <span className="rounded-sm bg-acid-lime/90 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-paper backdrop-blur-sm">
+            <span className="rounded-sm bg-void/85 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-acid-lime backdrop-blur-sm">
               {film.quality}
             </span>
           ) : null}

@@ -1,11 +1,12 @@
 import Link from 'next/link'
+import { Info, Play } from 'lucide-react'
 import FilmCard from '@/components/film-card'
 import { fetchLatestFilms } from '@/lib/nguonc'
 import type { FilmListItem } from '@/lib/types'
 
 export const revalidate = 60
 
-/** Horizontal scrolling film row, Netflix style. */
+/** Horizontal scrolling film row. */
 function FilmRow({ title, films }: { title: string; films: FilmListItem[] }) {
   if (films.length === 0) return null
   return (
@@ -36,7 +37,7 @@ export default async function HomePage() {
 
   return (
     <div>
-      {/* Billboard hero — full-width backdrop like Netflix */}
+      {/* Billboard hero */}
       <section className="relative -mx-4 -mt-14 flex min-h-[62vh] items-end overflow-hidden sm:min-h-[72vh]">
         {hero ? (
           <>
@@ -60,18 +61,17 @@ export default async function HomePage() {
               <div className="mt-6 flex flex-wrap items-center gap-3">
                 <Link
                   href={`/xem/${hero.slug}`}
-                  className="inline-flex h-11 items-center gap-2 rounded bg-paper px-6 text-[15px] font-semibold text-void transition-colors hover:bg-white/80"
+                  className="inline-flex h-11 items-center gap-2 rounded-md bg-acid-lime px-6 text-[15px] font-semibold text-void transition-opacity hover:opacity-90"
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                    <path d="M8 5.14v13.72L19 12 8 5.14z" />
-                  </svg>
+                  <Play size={16} strokeWidth={2.5} fill="currentColor" aria-hidden />
                   Xem ngay
                 </Link>
                 <Link
                   href={`/phim/${hero.slug}`}
-                  className="inline-flex h-11 items-center gap-2 rounded bg-white/20 px-5 text-[15px] font-medium text-paper backdrop-blur-sm transition-colors hover:bg-white/30"
+                  className="inline-flex h-11 items-center gap-2 rounded-md bg-white/10 px-5 text-[15px] font-medium text-paper backdrop-blur-sm transition-colors hover:bg-white/20"
                 >
-                  ℹ Thông tin
+                  <Info size={16} strokeWidth={2} aria-hidden />
+                  Thông tin
                 </Link>
               </div>
             </div>
