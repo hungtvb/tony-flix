@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm'
-import { pgTable, text, timestamp } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, primaryKey } from 'drizzle-orm/pg-core'
 import { drizzle, type PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import { scryptSync, timingSafeEqual, randomBytes } from 'node:crypto'
@@ -24,6 +24,40 @@ export const users = pgTable('users', {
 })
 
 export type User = typeof users.$inferSelect
+
+/** Phim user đã bấm yêu thích. PK composite (user_id, film_slug). */
+export const favorites = pgTable(
+  'favorites',
+  {
+    userId: text('user_id').notNull(),
+    filmSlug: text('film_slug').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.filmSlug] })],
+)
+
+export type Favorite = typeof favorites.$inferSelect
+
+/**
+ * Tiến độ xem theo CẤP TẬP (player là iframe cross-origin nên không đọc được
+ * vị trí phút bên trong). PK composite (user_id, film_slug) — mỗi phim một
+ * dòng, upsert cập nhật tập/server mới nhất.
+ */
+export const watchProgress = pgTable(
+  'watch_progress',
+  {
+    userId: text('user_id').notNull(),
+    filmSlug: text('film_slug').notNull(),
+    /** Slug tập đang xem dở, ví dụ 'tap-5' hoặc 'full-1'. */
+    episode: text('episode').notNull(),
+    /** Tên server embed đã chọn, ví dụ 'Số 1'. */
+    serverName: text('server_name').notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.filmSlug] })],
+)
+
+export type WatchProgress = typeof watchProgress.$inferSelect
 
 // ---------------------------------------------------------------------------
 // Password hashing (scrypt, Node crypto)
@@ -97,6 +131,24 @@ async function ensureSchema(): Promise<void> {
         RETURNING id
       `
       if (seeded.length > 0) console.log('[db] seeded default admin account')
+      await sql`
+        CREATE TABLE IF NOT EXISTS favorites (
+          user_id TEXT NOT NULL,
+          film_slug TEXT NOT NULL,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+          PRIMARY KEY (user_id, film_slug)
+        )
+      `
+      await sql`
+        CREATE TABLE IF NOT EXISTS watch_progress (
+          user_id TEXT NOT NULL,
+          film_slug TEXT NOT NULL,
+          episode TEXT NOT NULL,
+          server_name TEXT NOT NULL,
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+          PRIMARY KEY (user_id, film_slug)
+        )
+      `
     })().catch((error) => {
       schemaReady = null // allow retry on next request after a transient failure
       throw error
