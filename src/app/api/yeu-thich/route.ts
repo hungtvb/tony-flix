@@ -4,6 +4,7 @@ import {
   listFavoritesPage,
   addFavorite,
   removeFavorite,
+  isFavorite,
 } from '@/lib/db'
 import { currentUser } from '@/lib/auth'
 import { fetchLatestFilms } from '@/lib/nguonc'
@@ -66,6 +67,17 @@ export async function GET(request: NextRequest) {
   const username = await requireUser(request)
   if (!username) {
     return NextResponse.json({ error: 'unauthenticated' }, { status: 401 })
+  }
+
+  // Chế độ kiểm tra nhanh cho nút tim: /api/yeu-thich?slug=<x> → {favorited}
+  const single = request.nextUrl.searchParams.get('slug')
+  if (single) {
+    try {
+      await ensureFavoritesSchema()
+      return NextResponse.json({ favorited: await isFavorite(username, single) })
+    } catch {
+      return NextResponse.json({ error: 'Không kiểm tra được yêu thích.' }, { status: 503 })
+    }
   }
 
   const page = parsePage(request.nextUrl.searchParams.get('page'))

@@ -305,3 +305,14 @@ export async function removeFavorite(username: string, filmSlug: string): Promis
     .delete(favorites)
     .where(and(eq(favorites.userId, username), eq(favorites.filmSlug, filmSlug)))
 }
+
+/** Kiểm tra nhanh một phim có trong yêu thích không (cho nút tim ở trang chi tiết). */
+export async function isFavorite(username: string, filmSlug: string): Promise<boolean> {
+  const database = await getDb()
+  const rows = await database
+    .select({ filmSlug: favorites.filmSlug })
+    .from(favorites)
+    .where(and(eq(favorites.userId, username), eq(favorites.filmSlug, filmSlug)))
+    .limit(1)
+  return rows.length > 0
+}

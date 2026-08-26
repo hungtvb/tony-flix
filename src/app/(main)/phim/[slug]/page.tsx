@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Play } from 'lucide-react'
 import FilmCard from '@/components/film-card'
+import FavoriteButton from '@/components/favorite-button'
 import { fetchFilm, fetchLatestFilms, searchFilms } from '@/lib/nguonc'
 import type { CategoryGroup, EpisodeServer, FilmListItem } from '@/lib/types'
 
@@ -128,19 +129,22 @@ export default async function FilmPage({ params }: { params: Promise<{ slug: str
             ) : null}
 
             <div className="mt-4 sm:mt-7">
-              {movie.episodes[0]?.items?.length ? (
-                <Link
-                  href={`/xem/${slug}?ep=${encodeURIComponent(movie.episodes[0].items[0].slug)}`}
-                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-acid-lime px-7 text-[14px] font-semibold text-void transition-opacity hover:opacity-90 sm:h-11 sm:w-auto sm:text-[15px]"
-                >
-                  <Play size={16} strokeWidth={2.5} fill="currentColor" aria-hidden />
-                  Xem ngay
-                </Link>
-              ) : (
-                <span className="inline-flex h-10 w-full items-center justify-center rounded-md border border-white/20 px-5 text-[13px] text-ash sm:w-auto sm:text-[14px]">
-                  Sắp ra mắt
-                </span>
-              )}
+              <div className="flex items-center justify-center gap-2.5 sm:justify-start">
+                {movie.episodes[0]?.items?.length ? (
+                  <Link
+                    href={`/xem/${slug}?ep=${encodeURIComponent(movie.episodes[0].items[0].slug)}`}
+                    className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-md bg-acid-lime px-7 text-[14px] font-semibold text-void transition-opacity hover:opacity-90 sm:h-11 sm:flex-none sm:text-[15px]"
+                  >
+                    <Play size={16} strokeWidth={2.5} fill="currentColor" aria-hidden />
+                    Xem ngay
+                  </Link>
+                ) : (
+                  <span className="inline-flex h-10 flex-1 items-center justify-center rounded-md border border-white/20 px-5 text-[13px] text-ash sm:flex-none sm:text-[14px]">
+                    Sắp ra mắt
+                  </span>
+                )}
+                <FavoriteButton slug={slug} />
+              </div>
             </div>
           </div>
         </div>
