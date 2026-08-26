@@ -1,7 +1,11 @@
 import Link from 'next/link'
 import { Search } from 'lucide-react'
+import UserMenu from '@/components/user-menu'
+import { currentUser } from '@/lib/auth'
 
-export default function Navbar() {
+export default async function Navbar() {
+  const user = await currentUser()
+
   return (
     <header className="fixed inset-x-0 top-0 z-50 bg-gradient-to-b from-void/95 via-void/60 to-transparent">
       <nav className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-8">
@@ -24,18 +28,21 @@ export default function Navbar() {
           </div>
         </div>
 
-        <form action="/tim-kiem" className="flex items-center gap-2">
-          <div className="relative flex items-center">
-            <Search size={15} strokeWidth={2} className="pointer-events-none absolute left-2.5 text-ash sm:left-3" aria-hidden />
-            <input
-              type="search"
-              name="keyword"
-              placeholder="Tìm phim…"
-              autoComplete="off"
-              className="h-8 w-32 rounded-md border border-graphite bg-carbon/90 pl-8 pr-2.5 text-[13px] text-paper outline-none backdrop-blur-sm transition-all placeholder:text-ash focus:w-44 focus:border-smoke sm:h-9 sm:w-48 sm:pl-9 sm:pr-3 sm:focus:w-56"
-            />
-          </div>
-        </form>
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <form action="/tim-kiem" className="flex items-center gap-2">
+            <div className="relative flex items-center">
+              <Search size={15} strokeWidth={2} className="pointer-events-none absolute left-2.5 text-ash sm:left-3" aria-hidden />
+              <input
+                type="search"
+                name="keyword"
+                placeholder="Tìm phim…"
+                autoComplete="off"
+                className="h-8 w-32 rounded-md border border-graphite bg-carbon/90 pl-8 pr-2.5 text-[13px] text-paper outline-none backdrop-blur-sm transition-all placeholder:text-ash focus:w-44 focus:border-smoke sm:h-9 sm:w-48 sm:pl-9 sm:pr-3 sm:focus:w-56"
+              />
+            </div>
+          </form>
+          {user && <UserMenu username={user} />}
+        </div>
       </nav>
     </header>
   )
