@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createSessionToken, sessionCookieOptions, SESSION_COOKIE, verifyCredentials } from '@/lib/auth'
+import { createSessionToken, sessionCookieOptions, SESSION_COOKIE } from '@/lib/session'
+import { findDbAccount } from '@/lib/db'
 
 /**
  * POST /api/dang-nhap  { username, password }
  * Sets a signed httpOnly session cookie on success. JSON in/out for the login form.
+ * Accounts live in Postgres (auto-created + seeded on first use); without
+ * DATABASE_URL we fall back to AUTH_USERS env pairs.
  */
 
 // Naive per-instance rate limit against password brute-force.
@@ -30,6 +33,28 @@ function recordAttempt(key: string): void {
 
 function resetAttempts(key: string): void {
   attempts.delete(key)
+}
+
+/** Verify against DB first (when configured), then env fallback. */
+async function verifyCredentials(username: string, password: string): Promise<string | null> {
+  const dbAccount = await findDbAccount(username)
+  if (dbAccount) {
+    return dbAccount.verify(password) ? dbAccount.username : null
+  }
+  // Env fallback: "user:pass,user2:pass2" — default admin/tonyflix when unset.
+  const raw = process.env.AUTH_USERS?.trim()
+  const pairs = raw && raw.length > 0 ? raw : 'admin:tonyflix'
+  for (const pair of pairs.split(',')) {
+    const idx = pair.indexOf(':')
+    if (idx <= 0) continue
+    const user = pair.slice(0, idx).trim()
+    const pass = pair.slice(idx + 1)
+    if (!user || !pass) continue
+    if (user.toLowerCase() === username.trim().toLowerCase() && pass === password) {
+      return user
+    }
+  }
+  return null
 }
 
 export async function POST(request: NextRequest) {
@@ -61,8 +86,8 @@ export async function POST(request: NextRequest) {
   }
 
   resetAttempts(key)
-  const token = await createSessionToken(account.username)
-  const response = NextResponse.json({ ok: true, username: account.username })
+  const token = await createSessionToken(account)
+  const response = NextResponse.json({ ok: true, username: account })
   // Behind Railway's TLS proxy, NODE_ENV=production + http between proxy and
   // container — trust x-forwarded-proto instead of the raw connection scheme.
   const proto = request.headers.get('x-forwarded-proto') ?? 'http'

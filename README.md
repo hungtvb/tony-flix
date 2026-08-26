@@ -50,6 +50,36 @@ npm run build && npm start
 
 Proxy qua server-side để tránh CORS và cache được upstream response (60s).
 
+
+## Xác thực (Login)
+
+Toàn bộ trang yêu cầu đăng nhập. Tài khoản lưu trong **PostgreSQL** (bảng `users`,
+mật khẩu hash scrypt) — bảng tự tạo và seed user `admin` mặc định lần đầu chạy.
+
+| Biến môi trường | Bắt buộc | Ý nghĩa |
+|---|---|---|
+| `DATABASE_URL` | khuyến nghị | Chuỗi kết nối Postgres. Thiếu thì fallback sang `AUTH_USERS` |
+| `AUTH_USERS` | không | Fallback cứng: `user:pass,user2:pass2` (mặc định `admin:tonyflix`) |
+| `AUTH_SECRET` | production | Khóa ký cookie phiên HMAC-SHA256 |
+
+Trên Railway: thêm service **Postgres** rồi tham chiếu `${{Postgres.DATABASE_URL}}`
+vào biến `DATABASE_URL` của app — schema + admin tự khởi tạo lúc chạy đầu.
+
+Đổi mật khẩu admin:
+```sql
+-- hash mới (chạy node): scrypt$<salt>$<hash>
+UPDATE users SET password_hash = '<hash>' WHERE id = 'admin';
+```
+
+### E2E
+
+```bash
+npm run build && PORT=3987 DATABASE_URL=... npm start &
+npx playwright test
+# hoặc một bước:
+./scripts/e2e-with-auth.sh
+```
+
 ---
 
 Licensed under the MIT License.
