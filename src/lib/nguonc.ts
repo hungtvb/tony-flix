@@ -64,6 +64,33 @@ export async function fetchLatestFilms(page = 1): Promise<FilmListResponse> {
   return data
 }
 
+async function fetchFilmsBy(
+  kind: 'the-loai' | 'quoc-gia' | 'nam-phat-hanh',
+  slug: string,
+  page = 1,
+): Promise<FilmListResponse> {
+  const data = await getJson<FilmListResponse>(
+    `${BASE}/films/${kind}/${encodeURIComponent(slug)}?page=${page}`,
+  )
+  if (!data || !Array.isArray(data.items)) throw new Error(`NguonC: malformed ${kind}/${slug} response`)
+  return data
+}
+
+/** Films by genre — /api/films/the-loai/{slug} (vd: hanh-dong, kinh-di, hoat-hinh). */
+export function fetchByGenre(slug: string, page = 1): Promise<FilmListResponse> {
+  return fetchFilmsBy('the-loai', slug, page)
+}
+
+/** Films by country — /api/films/quoc-gia/{slug} (vd: han-quoc, trung-quoc, nhat-ban). */
+export function fetchByCountry(slug: string, page = 1): Promise<FilmListResponse> {
+  return fetchFilmsBy('quoc-gia', slug, page)
+}
+
+/** Films by release year — /api/films/nam-phat-hanh/{year}. */
+export function fetchByYear(year: string | number, page = 1): Promise<FilmListResponse> {
+  return fetchFilmsBy('nam-phat-hanh', String(year), page)
+}
+
 /** Keyword search — /api/films/search?keyword=...&page=N */
 export async function searchFilms(keyword: string, page = 1): Promise<FilmListResponse> {
   const data = await getJson<FilmListResponse>(

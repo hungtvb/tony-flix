@@ -1,18 +1,37 @@
 import Link from 'next/link'
-import { Info, Play } from 'lucide-react'
+import { ChevronLeft, Info, Play } from 'lucide-react'
 import FilmCard from '@/components/film-card'
+import CategoryRow from '@/components/category-row'
 import { fetchLatestFilms } from '@/lib/nguonc'
 import type { FilmListItem } from '@/lib/types'
 
 export const revalidate = 60
 
-/** Horizontal scrolling film row. */
+/** Các hàng danh mục trên trang chủ (slugs đã verify với NguonC API). */
+const CATEGORY_ROWS: {
+  title: string
+  kind: 'the-loai' | 'quoc-gia' | 'nam-phat-hanh'
+  slug: string
+  viewAllHref?: string
+}[] = [
+  { title: 'Hành Động', kind: 'the-loai', slug: 'hanh-dong', viewAllHref: '/the-loai/hanh-dong' },
+  { title: 'Phim Hàn Quốc', kind: 'quoc-gia', slug: 'han-quoc', viewAllHref: '/quoc-gia/han-quoc' },
+  { title: 'Kinh Dị', kind: 'the-loai', slug: 'kinh-di', viewAllHref: '/the-loai/kinh-di' },
+  { title: 'Anime Nhật Bản', kind: 'quoc-gia', slug: 'nhat-ban', viewAllHref: '/quoc-gia/nhat-ban' },
+  { title: 'Hoạt Hình', kind: 'the-loai', slug: 'hoat-hinh', viewAllHref: '/the-loai/hoat-hinh' },
+  { title: 'Phim Trung Quốc', kind: 'quoc-gia', slug: 'trung-quoc', viewAllHref: '/quoc-gia/trung-quoc' },
+  { title: 'Cổ Trang', kind: 'the-loai', slug: 'co-trang', viewAllHref: '/the-loai/co-trang' },
+  { title: 'Viễn Tưởng', kind: 'the-loai', slug: 'khoa-hoc-vien-tuong', viewAllHref: '/the-loai/khoa-hoc-vien-tuong' },
+  { title: 'Phim Mới 2025', kind: 'nam-phat-hanh', slug: '2025', viewAllHref: '/nam-phat-hanh/2025' },
+]
+
+/** Horizontal scrolling film row, Netflix style (server-rendered). */
 function FilmRow({ title, films }: { title: string; films: FilmListItem[] }) {
   if (films.length === 0) return null
   return (
-    <section className="mt-10">
-      <h2 className="mb-3 text-[20px] font-semibold tracking-tight text-paper">{title}</h2>
-      <div className="no-scrollbar -mx-4 flex snap-x gap-2.5 overflow-x-auto px-4 pb-2 sm:gap-3">
+    <section className="mt-9">
+      <h2 className="mb-3 px-4 text-[20px] font-semibold tracking-tight text-paper sm:px-0">{title}</h2>
+      <div className="no-scrollbar -mx-4 flex snap-x gap-2.5 overflow-x-auto px-4 pb-2 sm:mx-0 sm:gap-3 sm:px-0">
         {films.map((film) => (
           <div key={film.slug} className="w-[132px] shrink-0 snap-start sm:w-[152px] md:w-[168px]">
             <FilmCard film={film} />
@@ -84,9 +103,12 @@ export default async function HomePage() {
         )}
       </section>
 
-      {/* Rows */}
-      <div className="pb-8">
+      {/* Rows: Mới cập nhật + danh mục đa dạng để user cuộn xuống */}
+      <div className="pb-10">
         <FilmRow title="Mới cập nhật" films={rest} />
+        {CATEGORY_ROWS.map((row) => (
+          <CategoryRow key={row.title} {...row} />
+        ))}
       </div>
     </div>
   )
