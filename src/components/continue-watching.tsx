@@ -17,12 +17,12 @@ interface ProgressItem {
   serverName: string
 }
 
-/** 'tap-5' → 'Tập 5'; 'full-…' → 'Full'; còn lại hiển thị nguyên bản. */
+/** 'tap-5' → 'Tập 5'; '*full*' → 'Full'; còn lại bỏ tiền tố tap-. */
 function episodeLabel(slug: string): string {
   const m = /^tap-(\d+)$/.exec(slug)
   if (m) return `Tập ${m[1]}`
-  if (/^full/i.test(slug)) return 'Full'
-  return slug
+  if (/full/i.test(slug)) return 'Full'
+  return slug.replace(/^tap-/, '')
 }
 
 export default function ContinueWatching() {
