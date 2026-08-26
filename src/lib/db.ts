@@ -215,6 +215,31 @@ export async function findDbAccount(username: string): Promise<DbAccount | null>
   }
 }
 
+/**
+ * Đổi mật khẩu tài khoản. Verify mật khẩu cũ trước khi ghi hash mới.
+ * Trả 'ok' | 'wrong' | 'missing' (user không tồn tại trong DB).
+ */
+export async function changePassword(
+  username: string,
+  oldPassword: string,
+  newPassword: string,
+): Promise<'ok' | 'wrong' | 'missing'> {
+  if (!hasDatabase()) throw new NoDatabaseError('DATABASE_URL is not set')
+  await ensureSchema()
+  const { db } = await getClient()
+  const rows = await db.execute<{ id: string; password_hash: string }>(
+    sql`SELECT id, password_hash FROM users WHERE id = ${username.trim().toLowerCase()} LIMIT 1`,
+  )
+  const row = rows[0]
+  if (!row) return 'missing'
+  if (!verifyPassword(oldPassword, row.password_hash)) return 'wrong'
+  await db
+    .update(users)
+    .set({ passwordHash: hashPassword(newPassword) })
+    .where(eq(users.id, username.trim().toLowerCase()))
+  return 'ok'
+}
+
 // ---------------------------------------------------------------------------
 // Favorites + watch progress
 // ---------------------------------------------------------------------------
