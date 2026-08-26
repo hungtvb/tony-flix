@@ -14,7 +14,12 @@ export default async function SearchPage({
   const keyword = (params.keyword ?? '').trim()
   const page = Math.max(1, Number.parseInt(params.page ?? '1', 10) || 1)
 
-  const data = keyword ? await searchFilms(keyword, page) : null
+  let data: Awaited<ReturnType<typeof searchFilms>> | null = null
+  try {
+    data = keyword ? await searchFilms(keyword, page) : null
+  } catch {
+    data = null
+  }
 
   return (
     <div className="pt-10">

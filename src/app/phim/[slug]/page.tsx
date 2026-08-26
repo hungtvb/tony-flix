@@ -56,8 +56,12 @@ export default async function FilmPage({ params }: { params: Promise<{ slug: str
     /* fall through */
   }
   if (related.length < 3) {
-    const latest = await fetchLatestFilms(1)
-    related = latest.items.filter((f) => f.slug !== slug).slice(0, 5)
+    try {
+      const latest = await fetchLatestFilms(1)
+      related = latest.items.filter((f) => f.slug !== slug).slice(0, 5)
+    } catch {
+      related = []
+    }
     relatedTitle = 'Có thể bạn thích'
   }
 
