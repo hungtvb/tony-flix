@@ -9,7 +9,8 @@ function episodeLabel(current: string, total: number): string {
 }
 
 export default function FilmCard({ film }: { film: FilmListItem }) {
-  const poster = film.poster_url || film.thumb_url
+  // NguonC: poster_url = ảnh NGANG, thumb_url = ảnh DỌC → card 2:3 cần thumb
+  const poster = film.thumb_url || film.poster_url
   const isNew = (() => {
     const d = new Date(film.modified)
     return Number.isFinite(d.getTime()) && Date.now() - d.getTime() < 7 * 864e5

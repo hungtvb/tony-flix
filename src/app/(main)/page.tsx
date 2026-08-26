@@ -70,7 +70,8 @@ export default async function HomePage() {
           <>
             <div className="absolute inset-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={hero.thumb_url || hero.poster_url} alt="" className="h-full w-full object-cover" />
+              {/* NguonC: poster_url = ảnh NGANG → banner 16:9 dùng poster_url */}
+              <img src={hero.poster_url || hero.thumb_url} alt="" className="h-full w-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-r from-void via-void/70 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-void to-transparent" />
             </div>

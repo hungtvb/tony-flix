@@ -70,13 +70,15 @@ export default async function FilmPage({ params }: { params: Promise<{ slug: str
         {/* Mobile backdrop: mờ nhẹ phía sau, không full-bleed */}
         <div className="absolute inset-0 sm:hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={movie.thumb_url || movie.poster_url} alt="" className="h-full w-full object-cover opacity-25 blur-sm" />
+          {/* NguonC: poster_url = NGANG (backdrop), thumb_url = DỌC (poster) */}
+          <img src={movie.poster_url || movie.thumb_url} alt="" className="h-full w-full object-cover opacity-25 blur-sm" />
           <div className="absolute inset-0 bg-gradient-to-b from-void/60 via-void/85 to-void" />
         </div>
 
         <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center gap-4 px-4 pb-8 text-center sm:flex-row sm:items-start sm:gap-6 sm:pb-10 sm:text-left">
           <div className="relative aspect-[2/3] w-32 shrink-0 self-center overflow-hidden rounded-lg shadow-xl ring-1 ring-white/15 sm:w-48">
-            <Image src={movie.poster_url || movie.thumb_url} alt={movie.name} fill sizes="192px" className="object-cover" priority />
+            {/* NguonC: thumb_url = ảnh DỌC 2:3 → khung poster dùng thumb_url */}
+            <Image src={movie.thumb_url || movie.poster_url} alt={movie.name} fill sizes="192px" className="object-cover" priority />
           </div>
 
           <div className="min-w-0 flex-1">

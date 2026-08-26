@@ -1,5 +1,11 @@
 /** NguonC API types (verified against phim.nguonc.com 25/08). */
 
+/**
+ * QUY ƯỚC NguonC (verified 26/08 — đo kích thước ảnh thật):
+ *   poster_url = ảnh NGANG (backdrop 16:9, VD 3840×2160) → dùng cho banner/hero
+ *   thumb_url  = ảnh DỌC (poster 2:3,   VD 300×450)     → dùng cho card poster
+ * Tên field ngược trực giác — đừng đổi lại!
+ */
 export interface FilmListItem {
   name: string
   slug: string
