@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next'
 import { GENRES, COUNTRIES, YEARS } from '@/lib/categories'
 import { fetchLatestFilms } from '@/lib/nguonc'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://tonyflix.up.railway.app'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://tony-flix-production.up.railway.app'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date()

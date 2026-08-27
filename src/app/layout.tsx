@@ -9,7 +9,7 @@ const inter = Inter({
   display: 'swap',
 })
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://tonyflix.up.railway.app'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://tony-flix-production.up.railway.app'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
