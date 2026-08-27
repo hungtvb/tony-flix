@@ -41,7 +41,7 @@ export default defineConfig({
     },
     {
       name: 'guest',
-      testMatch: /auth\.spec\.ts|register\.spec\.ts|favorites\.spec\.ts|watch-progress\.spec\.ts|favorite-button\.spec\.ts|favorites-page\.spec\.ts|continue-watching\.spec\.ts|mobile-nav\.spec\.ts|change-password\.spec\.ts|error-loading\.spec\.ts/,
+      testMatch: /auth\.spec\.ts|register\.spec\.ts|favorites\.spec\.ts|watch-progress\.spec\.ts|favorite-button\.spec\.ts|favorites-page\.spec\.ts|continue-watching\.spec\.ts|mobile-nav\.spec\.ts|change-password\.spec\.ts|error-loading\.spec\.ts|admin-guard\.spec\.ts|admin-stats\.spec\.ts|admin-users\.spec\.ts|admin-curated.*\.spec\.ts|admin-settings.*\.spec\.ts|navbar-admin-link\.spec\.ts|admin-maintenance\.spec\.ts/,
       use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
       // KHÔNG dependencies: không login trước — mọi request là khách thật
     },

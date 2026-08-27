@@ -86,6 +86,10 @@ async function ensureSchema(): Promise<void> {
         RETURNING id
       `
       if (seeded.length > 0) log.info('db_seeded_admin')
+      // ALTER idempotent: thêm cột is_admin (đã có thì bỏ qua), rồi đảm bảo
+      // tài khoản admin luôn có quyền admin. Chạy mỗi lần boot an toàn.
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin boolean NOT NULL DEFAULT false`
+      await sql`UPDATE users SET is_admin = true WHERE id = 'admin'`
       await sql`
         CREATE TABLE IF NOT EXISTS favorites (
           user_id TEXT NOT NULL,
@@ -166,6 +170,39 @@ export async function findDbAccount(username: string): Promise<DbAccount | null>
   } catch (error) {
     log.error('db_lookup_failed', { username, error: String(error) })
     return null
+  }
+}
+
+// Cache quyền admin theo process để không truy vấn DB mỗi request.
+// Key là username đã lowercase; TTL ngắn (10s) đủ tươi mà vẫn nhẹ.
+const adminCache = new Map<string, { isAdmin: boolean; ts: number }>()
+const ADMIN_CACHE_TTL = 10_000
+
+/**
+ * Kiểm tra nhanh một username có quyền admin không.
+ * Trả false an toàn khi: không có DB, user không tồn tại, hoặc lỗi.
+ * Kết quả cache 10s theo process.
+ */
+export async function findDbAccountAdmin(username: string): Promise<boolean> {
+  if (!hasDatabase()) {
+    // Không có DB → chỉ tài khoản env-fallback admin (nếu trùng tên) mới admin.
+    return username.trim().toLowerCase() === 'admin'
+  }
+  const key = username.trim().toLowerCase()
+  const cached = adminCache.get(key)
+  if (cached && Date.now() - cached.ts < ADMIN_CACHE_TTL) return cached.isAdmin
+  try {
+    await ensureSchema()
+    const { db } = await getClient()
+    const rows = await db.execute<{ is_admin: boolean }>(
+      sql`SELECT is_admin FROM users WHERE id = ${key} LIMIT 1`,
+    )
+    const isAdmin = Boolean(rows[0]?.is_admin)
+    adminCache.set(key, { isAdmin, ts: Date.now() })
+    return isAdmin
+  } catch (error) {
+    log.error('db_admin_lookup_failed', { username: key, error: String(error) })
+    return false
   }
 }
 

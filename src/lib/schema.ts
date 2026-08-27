@@ -1,9 +1,10 @@
 import { sql } from 'drizzle-orm'
-import { pgTable, text, timestamp, primaryKey } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, boolean, primaryKey } from 'drizzle-orm/pg-core'
 
 export const users = pgTable('users', {
   id: text('id').primaryKey(), // username, lowercased for lookups
   passwordHash: text('password_hash').notNull(),
+  isAdmin: boolean('is_admin').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 
