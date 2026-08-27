@@ -4,6 +4,10 @@ import { fetchByGenre } from '@/lib/nguonc'
 
 export const revalidate = 60
 
+export function generateStaticParams() {
+  return GENRES.map((g) => ({ slug: g.slug }))
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   return { title: `Phim thể loại ${displayName(GENRES, slug)}` }

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { fetchLatestFilms } from '@/lib/nguonc'
+import { proxyCacheHeaders } from '@/lib/cache'
 
 export const revalidate = 60
 
@@ -8,7 +9,7 @@ export async function GET(request: Request) {
   const page = Math.max(1, Number.parseInt(searchParams.get('page') ?? '1', 10) || 1)
   try {
     const data = await fetchLatestFilms(page)
-    return NextResponse.json(data)
+    return NextResponse.json(data, { headers: proxyCacheHeaders(300) })
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 502 })
   }

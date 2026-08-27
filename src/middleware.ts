@@ -8,6 +8,8 @@ const PUBLIC_PATHS = [
   '/api/dang-ky',
   '/api/thoat',
   '/api/health',
+  '/api/latest',
+  '/api/search',
   '/robots.txt',
   '/sitemap.xml',
   '/manifest.webmanifest',

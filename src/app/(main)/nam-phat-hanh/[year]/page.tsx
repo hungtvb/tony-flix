@@ -1,7 +1,12 @@
 import CategoryBrowser from '@/components/category-browser'
+import { YEARS } from '@/lib/categories'
 import { fetchByYear } from '@/lib/nguonc'
 
 export const revalidate = 60
+
+export function generateStaticParams() {
+  return YEARS.map((y) => ({ year: String(y) }))
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ year: string }> }) {
   const { year } = await params
