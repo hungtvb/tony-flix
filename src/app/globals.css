@@ -46,6 +46,22 @@ html {
   color-scheme: dark;
 }
 
+[data-theme='light'] {
+  color-scheme: light;
+  --color-void: #ffffff;
+  --color-carbon: #f5f6f7;
+  --color-obsidian: #ebecee;
+  --color-graphite: #d4d6da;
+  --color-smoke: #b8bbc0;
+  --color-ash: #6b7280;
+  --color-fog: #52555c;
+  --color-mist: #1a1c1f;
+  --color-bone: #2a2d31;
+  --color-paper: #000000;
+  --color-acid-lime: #c9d600;
+  --shadow-subtle: rgb(212, 214, 218) 0px 0px 0px 1px inset;
+}
+
 body {
   background-color: var(--color-void);
   color: var(--color-mist);

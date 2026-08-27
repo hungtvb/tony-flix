@@ -3,6 +3,7 @@ import UserMenu from '@/components/user-menu'
 import MobileNav from '@/components/mobile-nav'
 import SearchBox from '@/components/search-box'
 import CategoryMenu from '@/components/category-menu'
+import ThemeToggle from '@/components/theme-toggle'
 import { currentUser } from '@/lib/auth'
 import { GENRES, COUNTRIES, YEARS } from '@/lib/categories'
 
@@ -37,6 +38,7 @@ export default async function Navbar() {
         <div className="flex items-center gap-1.5 sm:gap-3">
           {/* Mobile: hamburger mở panel điều hướng (chỉ hiện < sm) */}
           <MobileNav />
+          <ThemeToggle />
           <SearchBox />
           {user && <UserMenu username={user} />}
         </div>
