@@ -28,3 +28,19 @@ export const COUNTRIES: CategoryOption[] = [
 export function displayName(list: CategoryOption[], slug: string): string {
   return list.find((c) => c.slug === slug)?.name ?? decodeURIComponent(slug)
 }
+
+/** Các năm phát hành phổ biến để duyệt nhanh (mới → cũ). */
+export const YEARS: CategoryOption[] = [
+  { slug: '2026', name: '2026' },
+  { slug: '2025', name: '2025' },
+  { slug: '2024', name: '2024' },
+  { slug: '2023', name: '2023' },
+  { slug: '2022', name: '2022' },
+  { slug: '2021', name: '2021' },
+  { slug: '2020', name: '2020' },
+  { slug: '2019', name: '2019' },
+  { slug: '2018', name: '2018' },
+  { slug: '2017', name: '2017' },
+  { slug: '2016', name: '2016' },
+  { slug: '2015', name: '2015' },
+]

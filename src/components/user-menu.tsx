@@ -1,26 +1,43 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { KeyRound, LogOut } from 'lucide-react'
 
 export default function UserMenu({ username }: { username: string }) {
-  const router = useRouter()
-  const [busy, setBusy] = useState(false)
+  const [open, setOpen] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [oldPassword, setOldPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [status, setStatus] = useState<{ ok: boolean; msg: string } | null>(null)
   const [saving, setSaving] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const busyLogout = useRef(false)
+
+  const initial = (username.trim()[0] ?? '?').toUpperCase()
+
+  useEffect(() => {
+    function onClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setOpen(false)
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('mousedown', onClick)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onClick)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [])
 
   async function handleLogout() {
-    if (busy) return
-    setBusy(true)
+    if (busyLogout.current) return
+    busyLogout.current = true
     try {
       await fetch('/api/thoat', { method: 'POST', credentials: 'same-origin' })
       window.location.assign('/dang-nhap')
     } finally {
-      setBusy(false)
+      busyLogout.current = false
     }
   }
 
@@ -28,6 +45,7 @@ export default function UserMenu({ username }: { username: string }) {
     setOldPassword('')
     setNewPassword('')
     setStatus(null)
+    setOpen(false)
     setDialogOpen(true)
   }
 
@@ -61,33 +79,47 @@ export default function UserMenu({ username }: { username: string }) {
   }
 
   return (
-    <div className="flex items-center gap-2.5">
-      <span className="hidden max-w-[120px] truncate text-[13px] font-medium text-mist sm:block">
-        {username}
-      </span>
-
+    <div className="relative" ref={menuRef}>
       <button
         type="button"
-        onClick={openDialog}
-        title="Đổi mật khẩu"
-        aria-label="Đổi mật khẩu"
-        className="inline-flex h-8 items-center gap-1.5 rounded-md border border-graphite bg-carbon/90 px-2.5 text-[12px] font-medium text-mist outline-none backdrop-blur-sm transition-colors hover:border-acid-lime/50 hover:text-paper disabled:opacity-50 sm:h-9"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-label="Tài khoản"
+        className="flex h-9 w-9 items-center justify-center rounded-full bg-acid-lime text-[15px] font-bold text-void outline-none transition-transform hover:scale-105"
       >
-        <KeyRound size={14} strokeWidth={2} aria-hidden />
-        <span className="hidden sm:inline">Đổi MK</span>
+        {initial}
       </button>
 
-      <button
-        type="button"
-        onClick={handleLogout}
-        disabled={busy}
-        title="Đăng xuất"
-        aria-label="Đăng xuất"
-        className="inline-flex h-8 items-center gap-1.5 rounded-md border border-graphite bg-carbon/90 px-2.5 text-[12px] font-medium text-mist outline-none backdrop-blur-sm transition-colors hover:border-acid-lime/50 hover:text-paper disabled:opacity-50 sm:h-9"
-      >
-        <LogOut size={14} strokeWidth={2} aria-hidden />
-        <span className="hidden sm:inline">Thoát</span>
-      </button>
+      {open && (
+        <div className="absolute right-0 top-full z-50 mt-2 w-52 rounded-lg border border-ash/20 bg-ink/95 p-1.5 shadow-xl backdrop-blur-md">
+          <div className="flex items-center gap-2.5 px-2.5 py-2">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-acid-lime text-[13px] font-bold text-void">
+              {initial}
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-[13px] font-semibold text-paper">{username}</p>
+              <p className="text-[11px] text-fog">Tài khoản</p>
+            </div>
+          </div>
+          <div className="my-1 h-px bg-white/10" />
+          <button
+            type="button"
+            onClick={openDialog}
+            className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] text-bone transition-colors hover:bg-white/10 hover:text-paper"
+          >
+            <KeyRound size={15} strokeWidth={2} aria-hidden />
+            Đổi mật khẩu
+          </button>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] text-bone transition-colors hover:bg-white/10 hover:text-paper"
+          >
+            <LogOut size={15} strokeWidth={2} aria-hidden />
+            Đăng xuất
+          </button>
+        </div>
+      )}
 
       {dialogOpen && (
         <div

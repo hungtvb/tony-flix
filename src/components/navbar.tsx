@@ -3,7 +3,9 @@ import { Heart } from 'lucide-react'
 import UserMenu from '@/components/user-menu'
 import MobileNav from '@/components/mobile-nav'
 import SearchBox from '@/components/search-box'
+import CategoryMenu from '@/components/category-menu'
 import { currentUser } from '@/lib/auth'
+import { GENRES, COUNTRIES, YEARS } from '@/lib/categories'
 
 export default async function Navbar() {
   const user = await currentUser()
@@ -24,6 +26,9 @@ export default async function Navbar() {
             <Link href="/" className="text-[14px] text-bone transition-colors hover:text-fog">
               Trang chủ
             </Link>
+            <CategoryMenu label="Thể loại" options={GENRES} basePath="/the-loai" />
+            <CategoryMenu label="Quốc gia" options={COUNTRIES} basePath="/quoc-gia" />
+            <CategoryMenu label="Năm" options={YEARS} basePath="/nam-phat-hanh" />
             <Link href="/moi-cap-nhat" className="text-[14px] text-mist transition-colors hover:text-paper">
               Mới cập nhật
             </Link>
