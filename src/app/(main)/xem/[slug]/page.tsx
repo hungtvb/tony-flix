@@ -50,7 +50,7 @@ export default async function WatchPage({
     `/xem/${slug}?${new URLSearchParams({ ...(svName ? { sv: svName } : {}), ...(epSlug ? { ep: epSlug } : {}) }).toString()}`
 
   return (
-    <div className="-mx-4 sm:-mx-8">
+    <div className="-mx-4 pt-14 sm:-mx-8 sm:pt-16">
       {/* Ghi tiến độ xem (client) — mỗi lần mở trang xem là 1 POST /api/tien-do */}
       <WatchTracker slug={slug} fallbackServer={activeServer.server_name} fallbackEpisode={activeEp.slug} />
       {/* Player — edge to edge like Netflix */}
