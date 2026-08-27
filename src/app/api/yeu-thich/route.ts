@@ -7,7 +7,7 @@ import {
   isFavorite,
 } from '@/lib/db'
 import { currentUser } from '@/lib/auth'
-import { fetchLatestFilms } from '@/lib/nguonc'
+import { fetchFilm } from '@/lib/nguonc'
 import type { FilmListItem } from '@/lib/types'
 
 /**
@@ -47,19 +47,26 @@ async function requireUser(request: NextRequest): Promise<string | null> {
   }
 }
 
-/** Làm giàu danh sách slug với tên + poster từ các trang latest của NguonC. Fail mềm. */
+/** Làm giàu danh sách slug với tên + poster từ chi tiết phim NguonC. Fail mềm. */
 async function enrichWithFilms(slugs: string[]): Promise<Map<string, FilmListItem>> {
   const index = new Map<string, FilmListItem>()
-  try {
-    const pages = await Promise.all([
-      fetchLatestFilms(1),
-      fetchLatestFilms(2),
-      fetchLatestFilms(3),
-    ])
-    for (const p of pages) for (const film of p.items) index.set(film.slug, film)
-  } catch {
-    // Upstream chết vẫn trả danh sách — client hiển thị fallback theo slug.
-  }
+  await Promise.all(
+    slugs.map(async (slug) => {
+      try {
+        const detail = await fetchFilm(slug)
+        if (detail?.movie) {
+          index.set(slug, {
+            slug,
+            name: detail.movie.name ?? slug,
+            poster_url: detail.movie.poster_url || '',
+            thumb_url: detail.movie.thumb_url || '',
+          } as FilmListItem)
+        }
+      } catch {
+        // phim không tìm thấy → bỏ qua
+      }
+    }),
+  )
   return index
 }
 

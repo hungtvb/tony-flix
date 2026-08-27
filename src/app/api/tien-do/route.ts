@@ -16,7 +16,7 @@ import type { FilmListItem } from '@/lib/types'
  * Auth bắt buộc qua middleware.
  */
 
-const LIMIT = 20
+const LIMIT = 100
 
 interface ProgressItem {
   slug: string

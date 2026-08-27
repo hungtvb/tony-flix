@@ -10,6 +10,7 @@ const PUBLIC_PATHS = [
   '/api/health',
   '/api/latest',
   '/api/search',
+  '/api/yeu-thich/',
   '/robots.txt',
   '/sitemap.xml',
   '/manifest.webmanifest',
