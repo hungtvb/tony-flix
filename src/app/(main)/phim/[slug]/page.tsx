@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { Play } from 'lucide-react'
 import FilmCard from '@/components/film-card'
 import FavoriteButton from '@/components/favorite-button'
+import EpisodeTabs from '@/components/episode-tabs'
 import { fetchFilm, fetchLatestFilms, searchFilms } from '@/lib/nguonc'
 import type { CategoryGroup, EpisodeServer, FilmListItem } from '@/lib/types'
 
@@ -50,14 +51,16 @@ export default async function FilmPage({ params }: { params: Promise<{ slug: str
   try {
     const guess = movie.name.split(/[:\-–]/)[0].trim()
     const res = await searchFilms(guess, 1)
-    related = res.items.filter((f) => f.slug !== slug).slice(0, 12)
+    related = res.items.filter((f) => f.slug !== slug).slice(0, 18)
   } catch {
     related = []
   }
   if (related.length < 4) {
     try {
       const latest = await fetchLatestFilms(1)
-      related = latest.items.filter((f) => f.slug !== slug).slice(0, 12)
+      const more = latest.items.filter((f) => f.slug !== slug)
+      const seen = new Set(related.map((r) => r.slug))
+      for (const f of more) if (!seen.has(f.slug) && related.length < 18) related.push(f)
     } catch {
       related = []
     }
@@ -67,10 +70,17 @@ export default async function FilmPage({ params }: { params: Promise<{ slug: str
     <div>
       {/* Backdrop header — poster trái + nội dung phải trên desktop; xếp dọc gọn trên mobile */}
       <section className="relative -mx-4 overflow-hidden pt-14 sm:-mx-8 sm:pt-16">
-        {/* Mobile backdrop: mờ nhẹ phía sau, không full-bleed */}
-        <div className="absolute inset-0 sm:hidden">
+        {/* Desktop backdrop: full-width mờ phía sau poster (cinematic) */}
+        <div className="absolute inset-0 hidden sm:block">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           {/* NguonC: poster_url = NGANG (backdrop), thumb_url = DỌC (poster) */}
+          <img src={movie.poster_url || movie.thumb_url} alt="" className="h-full w-full object-cover opacity-20" />
+          <div className="absolute inset-0 bg-gradient-to-r from-void via-void/85 to-void/40" />
+          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-void to-transparent" />
+        </div>
+        {/* Mobile backdrop: mờ nhẹ phía sau */}
+        <div className="absolute inset-0 sm:hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={movie.poster_url || movie.thumb_url} alt="" className="h-full w-full object-cover opacity-25 blur-sm" />
           <div className="absolute inset-0 bg-gradient-to-b from-void/60 via-void/85 to-void" />
         </div>
@@ -152,27 +162,11 @@ export default async function FilmPage({ params }: { params: Promise<{ slug: str
         </div>
       </section>
 
-      {/* Episodes by server */}
-      {movie.episodes.some((s) => s.items.length > 0) ? (
-        <section className="mt-8 space-y-7 sm:mt-10 sm:space-y-8">
-          {movie.episodes.map((server: EpisodeServer) =>
-            server.items.length > 0 ? (
-              <div key={server.server_name}>
-                <h2 className="mb-2.5 text-[16px] font-semibold tracking-tight text-paper sm:mb-3 sm:text-[18px]">{server.server_name}</h2>
-                <div className="flex flex-wrap gap-2">
-                  {server.items.map((ep) => (
-                    <Link
-                      key={`${server.server_name}-${ep.slug}`}
-                      href={`/xem/${slug}?sv=${encodeURIComponent(server.server_name)}&ep=${encodeURIComponent(ep.slug)}`}
-                      className="inline-flex h-9 min-w-12 items-center justify-center rounded-md bg-white/5 px-2.5 text-[13px] text-mist transition-colors hover:bg-white/20 hover:text-paper"
-                    >
-                      {ep.name}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ) : null,
-          )}
+      {/* Episodes by server — dạng tabs ngang */}
+      {movie.episodes.some((s: EpisodeServer) => s.items.length > 0) ? (
+        <section className="mt-8 sm:mt-10">
+          <h2 className="mb-3 text-[16px] font-semibold tracking-tight text-paper sm:mb-4 sm:text-[18px]">Tập phim</h2>
+          <EpisodeTabs slug={slug} servers={movie.episodes.filter((s: EpisodeServer) => s.items.length > 0)} />
         </section>
       ) : null}
 

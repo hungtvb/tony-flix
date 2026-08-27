@@ -58,8 +58,8 @@ export default function FilmCard({ film }: { film: FilmListItem }) {
         </div>
 
         {/* Bottom info (always visible, darkened on hover) */}
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent px-2 pb-1.5 pt-6 transition-opacity group-hover:opacity-0 sm:pb-2">
-          <p className="truncate text-[11px] font-medium text-bone sm:text-[13px]">{film.name}</p>
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/75 to-transparent px-2 pb-1.5 pt-7 transition-opacity group-hover:opacity-0 sm:pb-2">
+          <p className="line-clamp-2 min-h-[2.4em] text-[11px] font-semibold leading-snug text-bone sm:text-[13px]">{film.name}</p>
           <p className="mt-0.5 flex items-center justify-between text-[10px] text-fog sm:text-[11px]">
             <span className="truncate">{episodeLabel(film.current_episode, film.total_episodes)}</span>
             <span>{film.year || ''}</span>

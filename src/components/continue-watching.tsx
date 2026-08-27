@@ -30,7 +30,7 @@ export default function ContinueWatching() {
 
   useEffect(() => {
     let alive = true
-    fetch('/api/tien-do')
+    fetch('/api/tien-do', { credentials: 'same-origin' })
       .then((r) => (r.ok ? r.json() : { items: [] }))
       .then((data: { items?: ProgressItem[] }) => {
         if (alive) setItems(data.items ?? [])

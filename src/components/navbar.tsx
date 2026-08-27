@@ -1,7 +1,8 @@
 import Link from 'next/link'
-import { Heart, Search } from 'lucide-react'
+import { Heart } from 'lucide-react'
 import UserMenu from '@/components/user-menu'
 import MobileNav from '@/components/mobile-nav'
+import SearchBox from '@/components/search-box'
 import { currentUser } from '@/lib/auth'
 
 export default async function Navbar() {
@@ -32,25 +33,14 @@ export default async function Navbar() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3">
           {/* Mobile: hamburger mở panel điều hướng (chỉ hiện < sm) */}
           <MobileNav />
           {/* Mobile-only: link Yêu thích dạng icon (menu text chỉ hiện từ sm trở lên) */}
           <Link href="/yeu-thich" aria-label="Yêu thích" className="flex h-8 w-8 items-center justify-center rounded-md text-paper transition-colors hover:bg-white/10 sm:hidden">
             <Heart size={17} strokeWidth={2} aria-hidden />
           </Link>
-          <form action="/tim-kiem" className="flex items-center gap-2">
-            <div className="relative flex items-center">
-              <Search size={15} strokeWidth={2} className="pointer-events-none absolute left-2.5 text-ash sm:left-3" aria-hidden />
-              <input
-                type="search"
-                name="keyword"
-                placeholder="Tìm phim…"
-                autoComplete="off"
-                className="h-8 w-32 rounded-md border border-graphite bg-carbon/90 pl-8 pr-2.5 text-[13px] text-paper outline-none backdrop-blur-sm transition-all placeholder:text-ash focus:w-44 focus:border-smoke sm:h-9 sm:w-48 sm:pl-9 sm:pr-3 sm:focus:w-56"
-              />
-            </div>
-          </form>
+          <SearchBox />
           {user && <UserMenu username={user} />}
         </div>
       </nav>

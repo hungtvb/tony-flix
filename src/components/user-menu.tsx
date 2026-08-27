@@ -17,7 +17,7 @@ export default function UserMenu({ username }: { username: string }) {
     if (busy) return
     setBusy(true)
     try {
-      await fetch('/api/thoat', { method: 'POST' })
+      await fetch('/api/thoat', { method: 'POST', credentials: 'same-origin' })
       window.location.assign('/dang-nhap')
     } finally {
       setBusy(false)
@@ -40,6 +40,7 @@ export default function UserMenu({ username }: { username: string }) {
       const res = await fetch('/api/doi-mat-khau', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
         body: JSON.stringify({ oldPassword, newPassword }),
       })
       const data = await res.json()

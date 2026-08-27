@@ -36,7 +36,8 @@ export default defineConfig({
       use: { ...devices['Pixel 7'], storageState: 'e2e/.auth/user.json' }, // Chromium-based (WebKit not installed)
       dependencies: ['setup'],
       // auth.spec + favorites/watch-progress API specs là guest-only (cần trạng thái chưa login)
-      testIgnore: /auth\.(setup|spec)\.ts|favorites\.spec\.ts|watch-progress\.spec\.ts/,
+      // search-desktop.spec chỉ dành cho viewport desktop (mobile dùng icon toggle)
+      testIgnore: /auth\.(setup|spec)\.ts|favorites\.spec\.ts|watch-progress\.spec\.ts|search-desktop\.spec\.ts/,
     },
     {
       name: 'guest',

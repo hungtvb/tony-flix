@@ -31,6 +31,7 @@ export default function WatchTracker({
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ slug, episode: ep, serverName: sv }),
+      credentials: 'same-origin',
       keepalive: true,
     }).catch(() => {})
     // eslint-disable-next-line react-hooks/exhaustive-deps

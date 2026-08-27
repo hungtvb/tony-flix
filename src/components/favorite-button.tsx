@@ -19,7 +19,7 @@ export default function FavoriteButton({ slug }: { slug: string }) {
 
   useEffect(() => {
     let alive = true
-    fetch('/api/yeu-thich?slug=' + encodeURIComponent(slug))
+    fetch('/api/yeu-thich?slug=' + encodeURIComponent(slug), { credentials: 'same-origin' })
       .then((r) => (r.ok ? r.json() : { favorited: false }))
       .then((data: { favorited?: boolean }) => {
         if (alive) startTransition(() => setFavorited(Boolean(data.favorited)))
@@ -42,6 +42,7 @@ export default function FavoriteButton({ slug }: { slug: string }) {
       const res = await fetch('/api/yeu-thich', {
         method: next ? 'POST' : 'DELETE',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
         body: JSON.stringify({ slug }),
       })
       if (!res.ok) setFavorited(!next) // rollback khi lỗi
