@@ -477,6 +477,78 @@ export async function getAdminStats(): Promise<AdminStats> {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Admin: user management
+// ---------------------------------------------------------------------------
+
+export interface AdminUserRow {
+  id: string
+  isAdmin: boolean
+  createdAt: string
+}
+
+/** Danh sách user phân trang, tìm kiếm theo id (ILIKE). Mới nhất trước. */
+export async function listUsers(opts: {
+  page?: number
+  pageSize?: number
+  search?: string
+}): Promise<{ items: AdminUserRow[]; total: number }> {
+  const database = await getDb()
+  const page = Math.max(1, opts.page ?? 1)
+  const pageSize = Math.min(100, opts.pageSize ?? 20)
+  const search = opts.search?.trim()
+  const where = search ? sql`${users.id} ILIKE ${`%${search}%`}` : undefined
+
+  const items = await database
+    .select({
+      id: users.id,
+      isAdmin: users.isAdmin,
+      createdAt: sql<string>`to_char(${users.createdAt}, 'YYYY-MM-DD"T"HH24:MI:SS"Z"')`,
+    })
+    .from(users)
+    .where(where)
+    .orderBy(desc(users.createdAt))
+    .limit(pageSize)
+    .offset((page - 1) * pageSize)
+
+  const totalRows = await database
+    .select({ count: sql<number>`count(*)::int` })
+    .from(users)
+    .where(where)
+  return { items: items.map((r) => ({ ...r, createdAt: String(r.createdAt) })), total: totalRows[0]?.count ?? 0 }
+}
+
+/** Reset mật khẩu về mặc định. Không cho reset chính mình. Trả false nếu user không tồn tại. */
+export async function resetUserPassword(
+  adminUsername: string,
+  targetId: string,
+  newPassword: string,
+): Promise<boolean> {
+  const database = await getDb()
+  const id = targetId.trim().toLowerCase()
+  if (id === adminUsername.trim().toLowerCase()) return false
+  const res = await database
+    .update(users)
+    .set({ passwordHash: hashPassword(newPassword) })
+    .where(eq(users.id, id))
+    .returning({ id: users.id })
+  return res.length > 0
+}
+
+/** Xoá user + toàn bộ dữ liệu liên quan (favorites, watch_progress). Không cho xoá chính mình. */
+export async function deleteUser(adminUsername: string, targetId: string): Promise<boolean> {
+  const database = await getDb()
+  const id = targetId.trim().toLowerCase()
+  if (id === adminUsername.trim().toLowerCase()) return false
+  const res = await database.delete(users).where(eq(users.id, id)).returning({ id: users.id })
+  const removed = res.length > 0
+  if (removed) {
+    await database.delete(favorites).where(eq(favorites.userId, id))
+    await database.delete(watchProgress).where(eq(watchProgress.userId, id))
+  }
+  return removed
+}
+
 /**
  * Health probe for the database connection. Runs a trivial `SELECT 1` with a
  * 3s cap so it never hangs the health endpoint. Returns 'up' / 'down' /
