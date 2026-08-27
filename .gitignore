@@ -36,3 +36,6 @@ next-env.d.ts
 e2e/.auth/
 e2e-results/
 e2e-report/
+
+# screenshots (local capture artifacts)
+/screenshots/

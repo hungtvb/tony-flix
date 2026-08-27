@@ -68,6 +68,22 @@ export default async function FilmPage({ params }: { params: Promise<{ slug: str
 
   return (
     <div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Movie',
+            name: movie.name,
+            ...(movie.original_name ? { alternateName: movie.original_name } : {}),
+            ...(year ? { datePublished: String(year) } : {}),
+            ...(movie.poster_url ? { image: movie.poster_url } : {}),
+            ...(categories.length ? { genre: categories } : {}),
+            ...(casts.length ? { actor: casts } : {}),
+            description: movie.description?.replace(/<[^>]+>/g, ' ').slice(0, 300),
+          }),
+        }}
+      />
       {/* Backdrop header — poster trái + nội dung phải trên desktop; xếp dọc gọn trên mobile */}
       <section className="relative -mx-4 overflow-hidden pt-14 sm:-mx-8 sm:pt-16">
         {/* Desktop backdrop: full-width mờ phía sau poster (cinematic) */}

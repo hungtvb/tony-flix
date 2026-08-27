@@ -1,7 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { readSessionToken, SESSION_COOKIE } from '@/lib/auth'
 
-const PUBLIC_PATHS = ['/dang-nhap', '/dang-ky', '/api/dang-nhap', '/api/dang-ky', '/api/thoat', '/api/health']
+const PUBLIC_PATHS = [
+  '/dang-nhap',
+  '/dang-ky',
+  '/api/dang-nhap',
+  '/api/dang-ky',
+  '/api/thoat',
+  '/api/health',
+  '/robots.txt',
+  '/sitemap.xml',
+  '/manifest.webmanifest',
+  '/opengraph-image',
+  '/icon.svg',
+]
 
 function isPublic(pathname: string): boolean {
   return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'))
