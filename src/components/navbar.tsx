@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { Heart } from 'lucide-react'
 import UserMenu from '@/components/user-menu'
 import MobileNav from '@/components/mobile-nav'
 import SearchBox from '@/components/search-box'
@@ -32,19 +31,12 @@ export default async function Navbar() {
             <Link href="/moi-cap-nhat" className="text-[14px] text-mist transition-colors hover:text-paper">
               Mới cập nhật
             </Link>
-            <Link href="/yeu-thich" className="text-[14px] text-mist transition-colors hover:text-paper">
-              Yêu thích
-            </Link>
           </div>
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-3">
           {/* Mobile: hamburger mở panel điều hướng (chỉ hiện < sm) */}
           <MobileNav />
-          {/* Mobile-only: link Yêu thích dạng icon (menu text chỉ hiện từ sm trở lên) */}
-          <Link href="/yeu-thich" aria-label="Yêu thích" className="flex h-8 w-8 items-center justify-center rounded-md text-paper transition-colors hover:bg-white/10 sm:hidden">
-            <Heart size={17} strokeWidth={2} aria-hidden />
-          </Link>
           <SearchBox />
           {user && <UserMenu username={user} />}
         </div>

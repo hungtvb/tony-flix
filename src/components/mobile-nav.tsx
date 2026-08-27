@@ -10,7 +10,6 @@ const LINKS = [
   { href: '/the-loai', label: 'Thể loại' },
   { href: '/quoc-gia', label: 'Quốc gia' },
   { href: '/nam-phat-hanh', label: 'Năm phát hành' },
-  { href: '/yeu-thich', label: 'Yêu thích' },
 ]
 
 export default function MobileNav() {

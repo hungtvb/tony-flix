@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { KeyRound, LogOut } from 'lucide-react'
+import Link from 'next/link'
+import { Heart, KeyRound, LogOut } from 'lucide-react'
 
 export default function UserMenu({ username }: { username: string }) {
   const [open, setOpen] = useState(false)
@@ -102,6 +103,14 @@ export default function UserMenu({ username }: { username: string }) {
             </div>
           </div>
           <div className="my-1 h-px bg-white/10" />
+          <Link
+            href="/yeu-thich"
+            onClick={() => setOpen(false)}
+            className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] text-bone transition-colors hover:bg-white/10 hover:text-paper"
+          >
+            <Heart size={15} strokeWidth={2} aria-hidden />
+            Yêu thích
+          </Link>
           <button
             type="button"
             onClick={openDialog}
