@@ -403,6 +403,80 @@ export async function listWatchProgress(username: string, limit = 20): Promise<P
     .limit(limit)
 }
 
+// ---------------------------------------------------------------------------
+// Admin statistics
+// ---------------------------------------------------------------------------
+
+export interface AdminStats {
+  totalUsers: number
+  newUsers7d: number
+  totalFavorites: number
+  totalWatchProgress: number
+  topFilms: { filmSlug: string; views: number }[]
+  topUsers: { username: string; favorites: number }[]
+}
+
+/**
+ * Tổng hợp số liệu quản trị. Chỉ gọi từ route admin (đã qua requireAdmin).
+ * Mọi truy vấn fail mềm (trả 0 / []) để dashboard không sập khi 1 bảng lỗi.
+ */
+export async function getAdminStats(): Promise<AdminStats> {
+  const database = await getDb()
+  const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+
+  const totalUsers = await database
+    .select({ count: sql<number>`count(*)::int` })
+    .from(users)
+    .then((r) => r[0]?.count ?? 0)
+
+  const newUsers7d = await database
+    .select({ count: sql<number>`count(*)::int` })
+    .from(users)
+    .where(sql`${users.createdAt} >= ${since.toISOString()}`)
+    .then((r) => r[0]?.count ?? 0)
+
+  const totalFavorites = await database
+    .select({ count: sql<number>`count(*)::int` })
+    .from(favorites)
+    .then((r) => r[0]?.count ?? 0)
+
+  const totalWatchProgress = await database
+    .select({ count: sql<number>`count(*)::int` })
+    .from(watchProgress)
+    .then((r) => r[0]?.count ?? 0)
+
+  const topFilms = await database
+    .select({
+      filmSlug: watchProgress.filmSlug,
+      views: sql<number>`count(*)::int`,
+    })
+    .from(watchProgress)
+    .groupBy(watchProgress.filmSlug)
+    .orderBy(desc(sql`count(*)`))
+    .limit(10)
+    .then((rows) => rows.map((r) => ({ filmSlug: r.filmSlug, views: r.views })))
+
+  const topUsers = await database
+    .select({
+      username: favorites.userId,
+      favorites: sql<number>`count(*)::int`,
+    })
+    .from(favorites)
+    .groupBy(favorites.userId)
+    .orderBy(desc(sql`count(*)`))
+    .limit(10)
+    .then((rows) => rows.map((r) => ({ username: r.username, favorites: r.favorites })))
+
+  return {
+    totalUsers,
+    newUsers7d,
+    totalFavorites,
+    totalWatchProgress,
+    topFilms,
+    topUsers,
+  }
+}
+
 /**
  * Health probe for the database connection. Runs a trivial `SELECT 1` with a
  * 3s cap so it never hangs the health endpoint. Returns 'up' / 'down' /
