@@ -2,9 +2,9 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { Play } from 'lucide-react'
 import FilmCard from '@/components/film-card'
 import FavoriteButton from '@/components/favorite-button'
+import WatchButton from '@/components/watch-button'
 import EpisodeTabs from '@/components/episode-tabs'
 import { fetchFilm, fetchLatestFilms, searchFilms } from '@/lib/nguonc'
 import type { CategoryGroup, EpisodeServer, FilmListItem } from '@/lib/types'
@@ -45,6 +45,12 @@ export default async function FilmPage({ params }: { params: Promise<{ slug: str
     .map((c) => c.trim())
     .filter(Boolean)
   const year = categories.find((c) => /^\d{4}$/.test(c))
+
+  // Phim lẻ = chỉ có 1 server, 1 tập duy nhất (slug chứa 'full')
+  const firstServer = movie.episodes[0]
+  const firstEp = firstServer?.items?.[0]
+  const isSingle =
+    !!firstEp && movie.episodes.every((s: EpisodeServer) => s.items.length <= 1) && /full/i.test(firstEp.slug)
 
   // Related films
   let related: FilmListItem[] = []
@@ -158,14 +164,8 @@ export default async function FilmPage({ params }: { params: Promise<{ slug: str
 
             <div className="mt-4 sm:mt-7">
               <div className="flex items-center justify-center gap-2.5 sm:justify-start">
-                {movie.episodes[0]?.items?.length ? (
-                  <Link
-                    href={`/xem/${slug}?ep=${encodeURIComponent(movie.episodes[0].items[0].slug)}`}
-                    className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-md bg-acid-lime px-7 text-[14px] font-semibold text-void transition-opacity hover:opacity-90 sm:h-11 sm:flex-none sm:text-[15px]"
-                  >
-                    <Play size={16} strokeWidth={2.5} fill="currentColor" aria-hidden />
-                    Xem ngay
-                  </Link>
+                {isSingle || firstEp ? (
+                  <WatchButton slug={slug} firstEpisodeSlug={firstEp?.slug ?? 'full'} isSingle={isSingle} />
                 ) : (
                   <span className="inline-flex h-10 flex-1 items-center justify-center rounded-md border border-white/20 px-5 text-[13px] text-ash sm:flex-none sm:text-[14px]">
                     Sắp ra mắt
@@ -178,8 +178,8 @@ export default async function FilmPage({ params }: { params: Promise<{ slug: str
         </div>
       </section>
 
-      {/* Episodes by server — dạng tabs ngang */}
-      {movie.episodes.some((s: EpisodeServer) => s.items.length > 0) ? (
+      {/* Episodes by server — dạng grid (phim lẻ không hiện section này) */}
+      {!isSingle && movie.episodes.some((s: EpisodeServer) => s.items.length > 0) ? (
         <section className="mt-8 sm:mt-10">
           <h2 className="mb-3 text-[16px] font-semibold tracking-tight text-paper sm:mb-4 sm:text-[18px]">Tập phim</h2>
           <EpisodeTabs slug={slug} servers={movie.episodes.filter((s: EpisodeServer) => s.items.length > 0)} />

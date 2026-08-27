@@ -5,7 +5,7 @@ import {
   listWatchProgress,
 } from '@/lib/db'
 import { currentUser } from '@/lib/auth'
-import { fetchLatestFilms } from '@/lib/nguonc'
+import { fetchFilm } from '@/lib/nguonc'
 import type { FilmListItem } from '@/lib/types'
 
 /**
@@ -49,16 +49,21 @@ export async function GET(request: NextRequest) {
     await ensureProgressSchema()
     const rows = await listWatchProgress(username, LIMIT)
 
-    // Làm giàu tên + poster từ NguonC latest (fail mềm — upstream chết vẫn trả danh sách)
-    const index = new Map<string, FilmListItem>()
+    // Làm giàu tên + poster từ chi tiết phim NguonC (fail mềm — upstream chết vẫn trả slug)
+    const index = new Map<string, { name: string; poster: string }>()
     if (rows.length > 0) {
       await Promise.all(
-        [1, 2, 3].map(async (p) => {
+        rows.map(async (row) => {
           try {
-            const res = await fetchLatestFilms(p)
-            for (const film of res.items) index.set(film.slug, film)
+            const detail = await fetchFilm(row.filmSlug)
+            if (detail?.movie) {
+              index.set(row.filmSlug, {
+                name: detail.movie.name ?? row.filmSlug,
+                poster: detail.movie.poster_url || detail.movie.thumb_url || '',
+              })
+            }
           } catch {
-            // bỏ qua
+            // bỏ qua nếu phim không tìm thấy
           }
         }),
       )
@@ -69,7 +74,7 @@ export async function GET(request: NextRequest) {
       return {
         slug: row.filmSlug,
         name: film?.name ?? row.filmSlug,
-        posterUrl: film?.poster_url || film?.thumb_url || '',
+        posterUrl: film?.poster || '',
         episode: row.episode,
         serverName: row.serverName,
         updatedAt: new Date(row.updatedAt).toISOString(),
