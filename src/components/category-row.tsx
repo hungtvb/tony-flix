@@ -79,7 +79,7 @@ export default function CategoryRow({
           {viewAllHref ? (
             <Link
               href={viewAllHref}
-              className="hidden items-center gap-0.5 text-[13px] font-medium text-fog transition-colors hover:text-acid-lime sm:inline-flex"
+              className="inline-flex items-center gap-0.5 text-[13px] font-medium text-fog transition-colors hover:text-acid-lime"
             >
               Xem tất cả
               <ChevronRight size={15} strokeWidth={2} aria-hidden />
