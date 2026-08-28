@@ -3,7 +3,7 @@ import { drizzle, type PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import { scryptSync, timingSafeEqual, randomBytes } from 'node:crypto'
 import { log } from '@/lib/logger'
-import { users, favorites, watchProgress } from '@/lib/schema'
+import { users, favorites, watchProgress, curatedFilms } from '@/lib/schema'
 
 
 /**
@@ -547,6 +547,113 @@ export async function deleteUser(adminUsername: string, targetId: string): Promi
     await database.delete(watchProgress).where(eq(watchProgress.userId, id))
   }
   return removed
+}
+
+// ---------------------------------------------------------------------------
+// Admin: curated films (Editor's picks)
+// ---------------------------------------------------------------------------
+
+let curatedSchemaReady: Promise<void> | null = null
+
+export function ensureCuratedSchema(): Promise<void> {
+  if (!curatedSchemaReady) {
+    curatedSchemaReady = (async () => {
+      await ensureSchema()
+      const { sql } = await getClient()
+      await sql`
+        CREATE TABLE IF NOT EXISTS curated_films (
+          film_slug TEXT PRIMARY KEY,
+          title TEXT NOT NULL,
+          poster TEXT NOT NULL DEFAULT '',
+          note TEXT NOT NULL DEFAULT '',
+          position INTEGER NOT NULL DEFAULT 0,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )
+      `
+    })().catch((error) => {
+      curatedSchemaReady = null
+      throw error
+    })
+  }
+  return curatedSchemaReady
+}
+
+export interface CuratedFilmRow {
+  filmSlug: string
+  title: string
+  poster: string
+  note: string
+  position: number
+}
+
+/** Danh sách phim nổi bật, sắp xếp theo position (nhỏ trước). */
+export async function listCuratedFilms(): Promise<CuratedFilmRow[]> {
+  const database = await getDb()
+  await ensureCuratedSchema()
+  return database
+    .select({
+      filmSlug: curatedFilms.filmSlug,
+      title: curatedFilms.title,
+      poster: curatedFilms.poster,
+      note: curatedFilms.note,
+      position: curatedFilms.position,
+    })
+    .from(curatedFilms)
+    .orderBy(curatedFilms.position, curatedFilms.createdAt)
+}
+
+/** Thêm / cập nhật phim nổi bật. Trả về row sau upsert. */
+export async function upsertCuratedFilm(input: {
+  filmSlug: string
+  title: string
+  poster?: string
+  note?: string
+  position?: number
+}): Promise<CuratedFilmRow> {
+  const database = await getDb()
+  await ensureCuratedSchema()
+  const slug = input.filmSlug.trim()
+  const nextPos = await database
+    .select({ max: sql<number>`coalesce(max(${curatedFilms.position}), 0)::int` })
+    .from(curatedFilms)
+    .then((r) => (r[0]?.max ?? 0) + 1)
+  const rows = await database
+    .insert(curatedFilms)
+    .values({
+      filmSlug: slug,
+      title: input.title,
+      poster: input.poster ?? '',
+      note: input.note ?? '',
+      position: input.position ?? nextPos,
+    })
+    .onConflictDoUpdate({
+      target: curatedFilms.filmSlug,
+      set: {
+        title: input.title,
+        poster: input.poster ?? '',
+        note: input.note ?? '',
+        position: input.position ?? nextPos,
+      },
+    })
+    .returning({
+      filmSlug: curatedFilms.filmSlug,
+      title: curatedFilms.title,
+      poster: curatedFilms.poster,
+      note: curatedFilms.note,
+      position: curatedFilms.position,
+    })
+  return rows[0]
+}
+
+/** Xoá phim nổi bật. Trả false nếu không tồn tại. */
+export async function removeCuratedFilm(filmSlug: string): Promise<boolean> {
+  const database = await getDb()
+  await ensureCuratedSchema()
+  const res = await database
+    .delete(curatedFilms)
+    .where(eq(curatedFilms.filmSlug, filmSlug.trim()))
+    .returning({ filmSlug: curatedFilms.filmSlug })
+  return res.length > 0
 }
 
 /**

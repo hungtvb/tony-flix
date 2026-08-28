@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm'
-import { pgTable, text, timestamp, boolean, primaryKey } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, boolean, integer, primaryKey } from 'drizzle-orm/pg-core'
 
 export const users = pgTable('users', {
   id: text('id').primaryKey(), // username, lowercased for lookups
@@ -43,3 +43,18 @@ export const watchProgress = pgTable(
 )
 
 export type WatchProgress = typeof watchProgress.$inferSelect
+
+/**
+ * Phim được admin chọn hiển thị nổi bật trên trang chủ (Editor's picks).
+ * PK là film_slug; position sắp xếp thứ tự (nhỏ trước).
+ */
+export const curatedFilms = pgTable('curated_films', {
+  filmSlug: text('film_slug').primaryKey(),
+  title: text('title').notNull(),
+  poster: text('poster').notNull().default(''),
+  note: text('note').notNull().default(''),
+  position: integer('position').notNull().default(0),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
+export type CuratedFilm = typeof curatedFilms.$inferSelect
